@@ -32,10 +32,10 @@ int main()
 
     char filename[100];
 
-    //printf("Enter the name of the file: ");
-    //scanf("%s", filename);
+    // printf("Enter the name of the file: ");
+    // scanf("%s", filename);
 
-    //readBoardFromFile(board, filename);
+    // readBoardFromFile(board, filename);
     printBoard(board);
 
     // TODO: Implement stages 2 and 3
@@ -52,13 +52,13 @@ Square *createBoard()
     // Allocate memory for the board
     Square *board = (Square *)malloc(sizeof(Square) * 64);
     // if memory allocation fails
-    if(board == NULL)
+    if (board == NULL)
     {
         printf("Memory allocation failed\n");
         exit(1);
     }
 
-    // Initialize the board with empty squares "." 
+    // Initialize the board with empty squares "."
     for (int i = 0; i < MAX_SQUARES; i++)
     {
         board[i].piece = '.';
@@ -72,26 +72,28 @@ Square *createBoard()
 }
 
 // Print the board with connections
-void printBoard(Square* board) {
+void printBoard(Square *board)
+{
     printf("\nChess Board Configuration:\n\n");
-    for (int row = 0; row < 8; row++) {
+    for (int row = 0; row < 8; row++)
+    {
         // Print row number
-        printf("%d ", 8 - row);
-        
+        printf("%d | ", 8 - row);
         // Print pieces and horizontal connections
-        for (int col = 0; col < 8; col++) {
-            Square* current = &board[row * 8 + col];
+        for (int col = 0; col < 8; col++)
+        {
+            Square *current = &board[row * 8 + col];
             printf("%c", current->piece);
-            if (col < 7) printf(" - ");
+            if (col < 7)
+            {
+                printf("  ");
+            }
         }
         printf("\n");
-        
         // Print vertical connections
-        if (row < 7) {
+        if (row < 7)
+        {
             printf("  ");
-            for (int col = 0; col < 8; col++) {
-                printf("|   ");
-            }
             printf("\n");
         }
     }
