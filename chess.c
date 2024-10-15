@@ -3,8 +3,8 @@
 #include <string.h>
 
 // constants
-int a = 1;
-int b = 2;
+FILE *file = NULL;
+
 // structs
 typedef struct Square
 {
