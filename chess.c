@@ -5,8 +5,10 @@
 // constants
 FILE *file = NULL;
 #define MAX_SQUARES 64
+#define MAX_MOVES 100
+#define MAX_FILE_NAME 100
 
-// structs
+// structs ---------------------->
 typedef struct Square
 {
     char piece;
@@ -16,6 +18,18 @@ typedef struct Square
     struct Square *east;
     struct Square *west;
 } Square;
+
+// Stack to store moves
+typedef struct Move
+{
+    /* data */
+    char move[5];
+    int value;
+    Move *prev;
+} Move;
+
+Move move_stack[MAX_MOVES];
+// <---------------------- structs
 
 // function prototypes
 Square *createBoard();
@@ -30,7 +44,7 @@ int main()
 {
     Square *board = createBoard();
 
-    char filename[100];
+    char filename[MAX_FILE_NAME];
 
     // printf("Enter the name of the file: ");
     // scanf("%s", filename);
