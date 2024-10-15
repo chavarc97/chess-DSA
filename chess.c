@@ -3,6 +3,7 @@
 #include <string.h>
 
 // constants
+int a = 1;
 
 // structs
 typedef struct Square
