@@ -66,6 +66,7 @@ Square *createBoard()
         board[i].south = (i < 56) ? &board[i + 8] : NULL;
         board[i].east = (i % 8 != 7) ? &board[i + 1] : NULL;
         board[i].west = (i % 8 != 0) ? &board[i - 1] : NULL;
+        // pruaba commit sofia 
     }
 
     return board;
