@@ -17,6 +17,13 @@ typedef struct Square
     struct Square *west;
 } Square;
 
+typedef struct Move
+{
+    char move[3];
+    int value;
+    struct Move *next;
+} Move;
+
 // function prototypes
 Square *createBoard();
 void readBoardFromFile(Square *board, const char *filename);
