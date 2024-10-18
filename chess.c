@@ -24,6 +24,12 @@ typedef struct Move
     struct Move *next;
 } Move;
 
+typedef struct Stack 
+{
+    Move *top;
+    Move *prev;   
+} Stack;
+
 // function prototypes
 Square *createBoard();
 void readBoardFromFile(Square *board, const char *filename);
