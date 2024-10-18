@@ -9,6 +9,7 @@ FILE *file = NULL;
 // structs
 typedef struct Square
 {
+    // TODO: COORDIMATES OF THE SQUARE
     char piece;
     int value;
     struct Square *north;
@@ -111,4 +112,25 @@ void printBoard(Square *board)
             printf("\n");
         }
     }
+}
+
+void readBoardFromFile(Square *board, const char *filename)
+{
+    // Open File
+    char route[100] = "./data/";
+    char fileRoute[100] = strcat(route, filename);
+    file = fopen(fileRoute, "r");
+
+    // Check if file exists
+    if(file == NULL)
+    {
+        printf("File not found\n");
+        return;
+    }
+
+    // Read the board configuration from the file
+
+    // Modify the board configuration
+
+    // Close the file
 }
