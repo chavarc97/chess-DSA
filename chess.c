@@ -46,17 +46,19 @@ int main()
 
     char filename[100];
 
-    // printf("Enter the name of the file: ");
-    // scanf("%s", filename);
+    printf("Enter the name of the file: ");
+    scanf("%s", filename);
 
     // readBoardFromFile(board, filename);
     printBoard(board);
+    readBoardFromFile(board, filename);
+     printBoard(board);
 
     // TODO: Implement stages 2 and 3
 
     // Clean up
     // TODO: Free the memory allocated for the board
-
+    free(board);
     return 0;
 }
 
@@ -118,7 +120,9 @@ void readBoardFromFile(Square *board, const char *filename)
 {
     // Open File
     char route[100] = "./data/";
-    char fileRoute[100] = strcat(route, filename);
+    char fileRoute[100];
+    strcpy(fileRoute, route);
+    strcat(fileRoute, filename);
     file = fopen(fileRoute, "r");
 
     // Check if file exists
@@ -127,10 +131,24 @@ void readBoardFromFile(Square *board, const char *filename)
         printf("File not found\n");
         return;
     }
-
+      int i = 0;
+      int j = 0;
+      char line[18];
     // Read the board configuration from the file
+     while(fgets(line, sizeof(line), file)!=NULL && i< MAX_SQUARES){
+        int col = 0;
+      while(col<8){
+        board[i].piece = line[col*2];
+        col++;
+        i++;
+              }
+        j++;
+     }
+
+    
 
     // Modify the board configuration
 
     // Close the file
+    fclose(file);
 }
