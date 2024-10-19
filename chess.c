@@ -121,8 +121,8 @@ void readBoardFromFile(Square *board, const char *filename)
     // Open File
     char route[100] = "./data/";
     char fileRoute[100];
-    strcpy(fileRoute, route);
-    strcat(fileRoute, filename);
+    strcpy(fileRoute, route);//copy of route in fileRoute
+    strcat(fileRoute, filename);//concatenate (./data/filename.txt)
     file = fopen(fileRoute, "r");
 
     // Check if file exists
@@ -131,23 +131,20 @@ void readBoardFromFile(Square *board, const char *filename)
         printf("File not found\n");
         return;
     }
-      int i = 0;
-      int j = 0;
+      int i = 0;//position
+      int j = 0;//row
       char line[18];
-    // Read the board configuration from the file
-     while(fgets(line, sizeof(line), file)!=NULL && i< MAX_SQUARES){
-        int col = 0;
+    // Read the board configuration from the file  and modify the board configuration
+     
+     while(fgets(line, 18,  file)!=NULL && i< MAX_SQUARES){//Fgets read the lines < 18 chars
+        int col = 0;//Column
       while(col<8){
-        board[i].piece = line[col*2];
+        board[i].piece = line[col*2];//skip the spaces with *2
         col++;
         i++;
               }
         j++;
      }
-
-    
-
-    // Modify the board configuration
 
     // Close the file
     fclose(file);
