@@ -42,26 +42,28 @@ void printBoard(Square *board);
 void findMoves(Square *board, int row, int col);
 void pushMove(char *move, int value);
 void printStack();
+void testBoard();
 
 // main function
 int main()
 {
-    Square *board = createBoard();
+    testBoard();
+    // Square *board = createBoard();
 
-    char filename[100];
+    // char filename[100];
 
-    printf("Enter the name of the file: ");
-    scanf("%s", filename);
+    // printf("Enter the name of the file: ");
+    // scanf("%s", filename);
 
-    printBoard(board);
-    readBoardFromFile(board, filename);
-    printBoard(board);
+    // printBoard(board);
+    // readBoardFromFile(board, filename);
+    // printBoard(board);
 
     // TODO: Implement stages 2 and 3
 
     // Clean up
     // TODO: Free the memory allocated for the board
-    free(board);
+    // free(board);
     return 0;
 }
 
@@ -170,4 +172,15 @@ void readBoardFromFile(Square *board, const char *filename)
 
     // Close the file
     fclose(file);
+}
+
+void testBoard()
+{
+    Square *board = createBoard();
+    
+    // Example usage
+    readBoardFromFile(board, "A1.txt");
+    printBoard(board);
+    
+    free(board);
 }
