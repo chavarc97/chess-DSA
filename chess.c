@@ -5,13 +5,17 @@
 // constants
 FILE *file = NULL;
 #define MAX_SQUARES 64
+#define MAX_ROW_COL 8
+#define GREEN "\033[0;32m"
+#define RESET "\033[0m"
 
 // structs
 typedef struct Square
 {
-    // TODO: COORDIMATES OF THE SQUARE
+    char coordinates[3]; // A1, A2, A3, ..., H8
     char piece;
     int value;
+    int isTarget; // 1 if the square is a target, 0 otherwise
     struct Square *north;
     struct Square *south;
     struct Square *east;
@@ -25,10 +29,10 @@ typedef struct Move
     struct Move *next;
 } Move;
 
-typedef struct Stack 
+typedef struct Stack
 {
     Move *top;
-    Move *prev;   
+    Move *prev;
 } Stack;
 
 // function prototypes
@@ -49,10 +53,9 @@ int main()
     printf("Enter the name of the file: ");
     scanf("%s", filename);
 
-    // readBoardFromFile(board, filename);
     printBoard(board);
     readBoardFromFile(board, filename);
-     printBoard(board);
+    printBoard(board);
 
     // TODO: Implement stages 2 and 3
 
@@ -75,14 +78,25 @@ Square *createBoard()
     }
 
     // Initialize the board with empty squares "."
-    for (int i = 0; i < MAX_SQUARES; i++)
+    // Initialize the board with empty squares and coordinates
+    for (int row = 0; row < MAX_ROW_COL; row++)
     {
-        board[i].piece = '.';
-        board[i].north = (i >= 8) ? &board[i - 8] : NULL;
-        board[i].south = (i < 56) ? &board[i + 8] : NULL;
-        board[i].east = (i % 8 != 7) ? &board[i + 1] : NULL;
-        board[i].west = (i % 8 != 0) ? &board[i - 1] : NULL;
-        // pruaba commit sofia 
+        for (int col = 0; col < MAX_ROW_COL; col++)
+        {
+            int index = row * 8 + col;
+            // Set coordinates (e.g., "A1", "B2", etc.)
+            board[index].coordinates[0] = 'A' + col; // File (A-H)
+            board[index].coordinates[1] = '1' + row; // Rank (1-8)
+            board[index].coordinates[2] = '\0';      // Null terminator
+
+            // Set piece and connections
+            board[index].piece = '.';
+            board[index].isTarget = 0;
+            board[index].north = (row > 0) ? &board[(row - 1) * 8 + col] : NULL;
+            board[index].south = (row < 7) ? &board[(row + 1) * 8 + col] : NULL;
+            board[index].east = (col < 7) ? &board[row * 8 + (col + 1)] : NULL;
+            board[index].west = (col > 0) ? &board[row * 8 + (col - 1)] : NULL;
+        }
     }
 
     return board;
@@ -95,12 +109,17 @@ void printBoard(Square *board)
     for (int row = 0; row < 8; row++)
     {
         // Print row number
-        printf("%d | ", 8 - row);
+        printf("%d | ", 1 + row);
         // Print pieces and horizontal connections
         for (int col = 0; col < 8; col++)
         {
             Square *current = &board[row * 8 + col];
-            printf("%c", current->piece);
+            if (current->isTarget)
+            {
+                printf(GREEN "%c" RESET, current->piece);  // Print in green if target
+            } else {
+                printf("%c", current->piece);
+            }
             if (col < 7)
             {
                 printf("  ");
@@ -114,6 +133,7 @@ void printBoard(Square *board)
             printf("\n");
         }
     }
+    printf("    A  B  C  D  E  F  G  H\n"); // Added column labels at bottom
 }
 
 void readBoardFromFile(Square *board, const char *filename)
@@ -121,30 +141,32 @@ void readBoardFromFile(Square *board, const char *filename)
     // Open File
     char route[100] = "./data/";
     char fileRoute[100];
-    strcpy(fileRoute, route);//copy of route in fileRoute
-    strcat(fileRoute, filename);//concatenate (./data/filename.txt)
+    strcpy(fileRoute, route);    // copy of route in fileRoute
+    strcat(fileRoute, filename); // concatenate (./data/filename.txt)
     file = fopen(fileRoute, "r");
 
     // Check if file exists
-    if(file == NULL)
+    if (file == NULL)
     {
         printf("File not found\n");
         return;
     }
-      int i = 0;//position
-      int j = 0;//row
-      char line[18];
+    int i = 0; // position
+    int j = 0; // row
+    char line[18];
     // Read the board configuration from the file  and modify the board configuration
-     
-     while(fgets(line, 18,  file)!=NULL && i< MAX_SQUARES){//Fgets read the lines < 18 chars
-        int col = 0;//Column
-      while(col<8){
-        board[i].piece = line[col*2];//skip the spaces with *2
-        col++;
-        i++;
-              }
+
+    while (fgets(line, 18, file) != NULL && i < MAX_SQUARES)
+    {                // Fgets read the lines < 18 chars
+        int col = 0; // Column
+        while (col < 8)
+        {
+            board[i].piece = line[col * 2]; // skip the spaces with *2
+            col++;
+            i++;
+        }
         j++;
-     }
+    }
 
     // Close the file
     fclose(file);
