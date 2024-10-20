@@ -202,6 +202,8 @@ void readBoardFromFile(Square *board, const char *filename)
             int targetIndex = targetRow * 8 + targetCol;
             board[targetIndex].isTarget = 1;
             printf("Marking target at index: %d\n", targetIndex);
+            printf("Target square: %s\n", board[targetIndex].coordinates);
+            printf("Target value: %d\n", board[targetIndex].value);
         }
     }
 
