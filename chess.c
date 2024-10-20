@@ -80,6 +80,14 @@ Square *createBoard()
     {
         for (int col = 0; col < 8; col++)
         {
+            /* 
+                * The logic behind the following lines is to set the coordinates of each square on the board.
+                * The coordinates are set in the format of "A1", "A2", "A3", ..., "H8".
+                * The ASCII value of 'A' is 65, and the ASCII value of '1' is 49.
+                * So by implementing [row * 8 + col] we are able to set the coordinates of each square on the board.
+                * For example, if row = 0 and col = 0, the coordinates of the square will be "A1" or if seen as a 1D array, it will be board[0].
+                * Then by incrementing the row and col, we are able to set the coordinates of the rest of the squares on the board.
+             */
             board[row * 8 + col].coordinates[0] = 'A' + col;
             board[row * 8 + col].coordinates[1] = '1' + row;
             board[row * 8 + col].coordinates[2] = '\0';
@@ -164,6 +172,14 @@ void readBoardFromFile(Square *board, const char *filename)
     char line[18];
 
     // Read the board layout first (8 rows)
+    /* 
+        * The following while loop is reading the board layout from the file.
+        * The loop will continue until it reaches the end of the file or until it has read 8 rows.
+        * The fgets function reads a line from the file and stores it in the variable line.
+        * The loop then iterates through each character in the line and sets the piece value of the square on the board.
+        * The piece value is set by calling the setPieceValue function.
+        * The loop then increments the row variable to move to the next row.
+     */
     while (row < 8 && fgets(line, 18, file) != NULL)
     {
         for (int col = 0; col < 8; col++)
@@ -180,6 +196,12 @@ void readBoardFromFile(Square *board, const char *filename)
 
     // Read the target coordinate (e.g., "B2")
     char targetCoord[4]; // Increased size to handle newline
+    /* 
+        * The following if statement is reading the target coordinate from the file.
+        * The fgets function reads the target coordinate from the file and stores it in the variable targetCoord.
+        * The target coordinate is then converted to a 0-based index for row and column.
+        * The target square is then marked by setting the isTarget flag to 1.
+     */
     if (fgets(targetCoord, sizeof(targetCoord), file) != NULL)
     {
         // Remove newline if present
@@ -211,6 +233,9 @@ void readBoardFromFile(Square *board, const char *filename)
     fclose(file);
 }
 
+/* 
+ Function to test the board configuration will be deleted in the final version
+ */
 void testBoard()
 {
     Square *board = createBoard();
@@ -222,6 +247,11 @@ void testBoard()
     free(board);
 }
 
+/* 
+    This function sets the value of the piece on the square.
+    The value of the piece is set based on the piece type read from the file.
+    and then a value is assigned according to the piece type.
+ */
 void setPieceValue(Square *board)
 {
     switch (board->piece)
