@@ -7,7 +7,16 @@ FILE *file = NULL;
 #define MAX_SQUARES 64
 #define MAX_ROW_COL 8
 #define GREEN "\033[0;32m"
+#define RED "\033[0;31m"
 #define RESET "\033[0m"
+
+// define piece values
+#define PAWN 1
+#define KNIGHT 3
+#define BISHOP 3
+#define TOWER 5
+#define QUEEN 8
+#define KING 10
 
 // structs
 typedef struct Square
@@ -43,27 +52,12 @@ void findMoves(Square *board, int row, int col);
 void pushMove(char *move, int value);
 void printStack();
 void testBoard();
+void setPieceValue(Square *board);
 
 // main function
 int main()
 {
     testBoard();
-    // Square *board = createBoard();
-
-    // char filename[100];
-
-    // printf("Enter the name of the file: ");
-    // scanf("%s", filename);
-
-    // printBoard(board);
-    // readBoardFromFile(board, filename);
-    // printBoard(board);
-
-    // TODO: Implement stages 2 and 3
-
-    // Clean up
-    // TODO: Free the memory allocated for the board
-    // free(board);
     return 0;
 }
 
@@ -81,23 +75,21 @@ Square *createBoard()
 
     // Initialize the board with empty squares "."
     // Initialize the board with empty squares and coordinates
-    for (int row = 0; row < MAX_ROW_COL; row++)
-    {
-        for (int col = 0; col < MAX_ROW_COL; col++)
-        {
-            int index = row * 8 + col;
-            // Set coordinates (e.g., "A1", "B2", etc.)
-            board[index].coordinates[0] = 'A' + col; // File (A-H)
-            board[index].coordinates[1] = '1' + row; // Rank (1-8)
-            board[index].coordinates[2] = '\0';      // Null terminator
 
-            // Set piece and connections
-            board[index].piece = '.';
-            board[index].isTarget = 0;
-            board[index].north = (row > 0) ? &board[(row - 1) * 8 + col] : NULL;
-            board[index].south = (row < 7) ? &board[(row + 1) * 8 + col] : NULL;
-            board[index].east = (col < 7) ? &board[row * 8 + (col + 1)] : NULL;
-            board[index].west = (col > 0) ? &board[row * 8 + (col - 1)] : NULL;
+    for (int row = 0; row < 8; row++)
+    {
+        for (int col = 0; col < 8; col++)
+        {
+            board[row * 8 + col].coordinates[0] = 'A' + col;
+            board[row * 8 + col].coordinates[1] = '1' + row;
+            board[row * 8 + col].coordinates[2] = '\0';
+            board[row * 8 + col].piece = '.';
+            board[row * 8 + col].value = 0;
+            board[row * 8 + col].isTarget = 0;
+            board[row * 8 + col].north = (row > 0) ? &board[(row - 1) * 8 + col] : NULL; // if row > 0, set north to the square above
+            board[row * 8 + col].south = (row < 7) ? &board[(row + 1) * 8 + col] : NULL; // if row < 7, set south to the square below
+            board[row * 8 + col].east = (col < 7) ? &board[row * 8 + col + 1] : NULL;    // if col < 7, set east to the square to the right
+            board[row * 8 + col].west = (col > 0) ? &board[row * 8 + col - 1] : NULL;    // if col > 0, set west to the square to the left
         }
     }
 
@@ -108,34 +100,41 @@ Square *createBoard()
 void printBoard(Square *board)
 {
     printf("\nChess Board Configuration:\n\n");
+    printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at top
+    // Print the board with connections
     for (int row = 0; row < 8; row++)
     {
-        // Print row number
-        printf("%d | ", 1 + row);
-        // Print pieces and horizontal connections
+        printf("%d | ", 1 + row); // Added row labels at left
         for (int col = 0; col < 8; col++)
         {
             Square *current = &board[row * 8 + col];
+            // check if the square is a target
             if (current->isTarget)
             {
-                printf(GREEN "%c" RESET, current->piece);  // Print in green if target
-            } else {
-                printf("%c", current->piece);
+                printf(GREEN "%c  " RESET, current->piece);
+            }
+            else if (current->isTarget == 0 && current->piece != '.')
+            {
+                printf(RED "%c  " RESET, current->piece);
+            }
+            else
+            {
+                printf("%c  ", current->piece);
             }
             if (col < 7)
             {
-                printf("  ");
+                printf(" ");
             }
         }
+        printf("%d | ", 1 + row); // Added row labels at right
         printf("\n");
-        // Print vertical connections
         if (row < 7)
         {
             printf("  ");
             printf("\n");
         }
     }
-    printf("    A  B  C  D  E  F  G  H\n"); // Added column labels at bottom
+    printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at bottom
 }
 
 void readBoardFromFile(Square *board, const char *filename)
@@ -153,21 +152,57 @@ void readBoardFromFile(Square *board, const char *filename)
         printf("File not found\n");
         return;
     }
-    int i = 0; // position
-    int j = 0; // row
-    char line[18];
-    // Read the board configuration from the file  and modify the board configuration
 
-    while (fgets(line, 18, file) != NULL && i < MAX_SQUARES)
-    {                // Fgets read the lines < 18 chars
-        int col = 0; // Column
-        while (col < 8)
+    // Reset all target flags first
+    for (int i = 0; i < 64; i++)
+    {
+        board[i].isTarget = 0;
+    }
+
+    // Read board configuration
+    int row = 0;
+    char line[18];
+
+    // Read the board layout first (8 rows)
+    while (row < 8 && fgets(line, 18, file) != NULL)
+    {
+        for (int col = 0; col < 8; col++)
         {
-            board[i].piece = line[col * 2]; // skip the spaces with *2
-            col++;
-            i++;
+            int index = row * 8 + col;
+            board[index].piece = line[col * 2];
+            if (board[index].piece != '.')
+            {
+                setPieceValue(&board[index]);
+            }
         }
-        j++;
+        row++;
+    }
+
+    // Read the target coordinate (e.g., "B2")
+    char targetCoord[4]; // Increased size to handle newline
+    if (fgets(targetCoord, sizeof(targetCoord), file) != NULL)
+    {
+        // Remove newline if present
+        targetCoord[strcspn(targetCoord, "\n")] = 0;
+
+        // Convert the coordinate to row and column
+        /* The lines `int targetRow = targetCoord[1] - '1';` and `int targetCol = targetCoord[0] -
+        'A';` are converting the target coordinate from a character representation to a 0-based
+        index for row and column respectively. */
+        int targetRow = targetCoord[1] - '1';
+        int targetCol = targetCoord[0] - 'A';
+
+        // Debug print
+        printf("Target coordinate: %s (row: %d, col: %d)\n",
+               targetCoord, targetRow + 1, targetCol + 1);
+
+        // Mark the target square
+        if (targetRow >= 0 && targetRow < 8 && targetCol >= 0 && targetCol < 8)
+        {
+            int targetIndex = targetRow * 8 + targetCol;
+            board[targetIndex].isTarget = 1;
+            printf("Marking target at index: %d\n", targetIndex);
+        }
     }
 
     // Close the file
@@ -177,10 +212,35 @@ void readBoardFromFile(Square *board, const char *filename)
 void testBoard()
 {
     Square *board = createBoard();
-    
+
     // Example usage
-    readBoardFromFile(board, "A1.txt");
+    readBoardFromFile(board, "T3.txt");
     printBoard(board);
-    
+
     free(board);
+}
+
+void setPieceValue(Square *board)
+{
+    switch (board->piece)
+    {
+    case 'P':
+        board->value = PAWN;
+        break;
+    case 'A':
+        board->value = BISHOP;
+        break;
+    case 'C':
+        board->value = KNIGHT;
+        break;
+    case 'T':
+        board->value = TOWER;
+        break;
+    case 'Q':
+        board->value = QUEEN;
+        break;
+    case 'K':
+        board->value = KING;
+        break;
+    }
 }
