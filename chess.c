@@ -109,6 +109,7 @@ void printBoard(Square *board)
 {
     printf("\nChess Board Configuration:\n\n");
     printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at top
+    printf("   --------------------------------\n");
     // Print the board with connections
     for (int row = 0; row < 8; row++)
     {
@@ -134,7 +135,7 @@ void printBoard(Square *board)
                 printf(" ");
             }
         }
-        printf("%d | ", 1 + row); // Added row labels at right
+        printf("| %d", 1 + row); // Added row labels at right
         printf("\n");
         if (row < 7)
         {
@@ -142,6 +143,7 @@ void printBoard(Square *board)
             printf("\n");
         }
     }
+    printf("   ________________________________\n");
     printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at bottom
 }
 
@@ -241,7 +243,7 @@ void testBoard()
     Square *board = createBoard();
 
     // Example usage
-    readBoardFromFile(board, "T3.txt");
+    readBoardFromFile(board, "T2.txt");
     printBoard(board);
 
     free(board);
