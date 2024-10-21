@@ -38,6 +38,7 @@ typedef struct Move
     struct Move *next;
 } Move;
 
+Move *head = NULL;
 typedef struct Stack
 {
     Move *top;
@@ -48,18 +49,29 @@ typedef struct Stack
 Square *createBoard();
 void readBoardFromFile(Square *board, const char *filename);
 void printBoard(Square *board);
-void findMoves(Square *board, Square *target, Move *head);
+void findMoves(Square *target, Move *head);
+void addMove(Move *h, Move *m);
+Move *createMove(char *coord, int value);
 void pushMove(Move *move, int value);
 char popMove();
 void printStack();
-void testBoard();
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
+void printList(Move *head);
 
 // main function
 int main()
 {
-    testBoard();
+    Square *board = createBoard();
+    // Example usage
+    readBoardFromFile(board, "T2.txt");
+    printBoard(board);
+    Square *target = findSquare(board);
+    printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
+    findMoves(target, head);
+    printList(head);
+    // Free memory
+    free(board);
     return 0;
 }
 
@@ -238,23 +250,6 @@ void readBoardFromFile(Square *board, const char *filename)
 }
 
 /*
- Function to test the board configuration will be deleted in the final version
- */
-void testBoard()
-{
-    Square *board = createBoard();
-    // Example usage
-    readBoardFromFile(board, "T2.txt");
-    printBoard(board);
-    Square *target = findSquare(board);
-    printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
-    Move *head = NULL;
-
-    // Free memory
-    free(board);
-}
-
-/*
     This function sets the value of the piece on the square.
     The value of the piece is set based on the piece type read from the file.
     and then a value is assigned according to the piece type.
@@ -296,13 +291,67 @@ Square *findSquare(Square *board)
     return NULL;
 }
 
-void findMoves(Square *board, Square *target, Move *head)
+void findMoves(Square *target, Move *head)
 {
-    // initialize 2 ptr to point to the board and the target square
-    Square *b_ptr = board;
+    // initialize 2 ptr to point to the target square and the linked list of moves
     Square *t_ptr = target;
-    Move *h_ptr = head;
+
+    printf("Target square: %s\n", t_ptr->coordinates);
     // based on the target location traverse the board orthogonally (Tower movements)
-    // find each move and store them if the next square is empty (D5-0) if isn´t empty
-    // (D3-1) the number after the '-' is the value of the piece
+    while (t_ptr != NULL)
+    {
+        Move *newMove = createMove(t_ptr->west->coordinates, t_ptr->west->value);
+        addMove(head, newMove);
+
+        if (t_ptr->west->piece != '.')
+        {
+            break;
+        }
+        t_ptr = t_ptr->west;
+    }
+}
+
+Move *createMove(char *coord, int value)
+{
+    Move *newMove = (Move *)malloc(sizeof(Move));
+    if (newMove == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    strcpy(newMove->move, coord);
+    newMove->value = value;
+    newMove->next = NULL;
+    return newMove;
+}
+
+void addMove(Move *h, Move *m)
+{
+    Move *tmp = head;
+    if (tmp == NULL)
+    {
+        head = m;
+    }
+    else
+    {
+        while (tmp->next != NULL)
+        {
+            tmp = tmp->next;
+        }
+        tmp->next = m;
+    }
+}
+
+void printList(Move *head)
+{
+    Move *tmp = head;
+    printf("List of moves: ");
+    while (tmp != NULL)
+    {
+        printf("%s-%d, ", tmp->move, tmp->value);
+        if (tmp->next == NULL)
+            printf("NULL\n");
+
+        tmp = tmp->next;
+    }
 }
