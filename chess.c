@@ -49,10 +49,12 @@ Square *createBoard();
 void readBoardFromFile(Square *board, const char *filename);
 void printBoard(Square *board);
 void findMoves(Square *board, int row, int col);
-void pushMove(char *move, int value);
+void pushMove(Move *move, int value);
+char popMove();
 void printStack();
 void testBoard();
 void setPieceValue(Square *board);
+Square *findSquare(Square *board);
 
 // main function
 int main()
@@ -241,11 +243,12 @@ void readBoardFromFile(Square *board, const char *filename)
 void testBoard()
 {
     Square *board = createBoard();
-
     // Example usage
     readBoardFromFile(board, "T2.txt");
     printBoard(board);
-
+    Square *target = findSquare(board);
+    printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
+    // Free memory
     free(board);
 }
 
@@ -278,3 +281,18 @@ void setPieceValue(Square *board)
         break;
     }
 }
+
+Square *findSquare(Square *board)
+{
+    for (int i = 0; i < 64; i++)
+    {
+        if (board[i].isTarget)
+        {
+            return &board[i];
+        }
+    }
+    return NULL;
+}
+
+
+
