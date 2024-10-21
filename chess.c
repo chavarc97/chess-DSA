@@ -37,8 +37,14 @@ typedef struct Move
     int value;
     struct Move *next;
 } Move;
-
+// set the head of the linked list to NULL
 Move *head = NULL;
+// function pointers
+Square* moveWest(Square *s) { return s->west; }
+Square* moveEast(Square *s) { return s->east; }
+Square* moveNorth(Square *s) { return s->north; }
+Square* moveSouth(Square *s) { return s->south; }
+
 typedef struct Stack
 {
     Move *top;
@@ -52,12 +58,10 @@ void printBoard(Square *board);
 void findMoves(Square *target, Move *head);
 void addMove(Move *h, Move *m);
 Move *createMove(char *coord, int value);
-void pushMove(Move *move, int value);
-char popMove();
-void printStack();
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
 void printList(Move *head);
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *));
 
 // main function
 int main()
@@ -298,17 +302,10 @@ void findMoves(Square *target, Move *head)
 
     printf("Target square: %s\n", t_ptr->coordinates);
     // based on the target location traverse the board orthogonally (Tower movements)
-    while (t_ptr != NULL)
-    {
-        Move *newMove = createMove(t_ptr->west->coordinates, t_ptr->west->value);
-        addMove(head, newMove);
-
-        if (t_ptr->west->piece != '.')
-        {
-            break;
-        }
-        t_ptr = t_ptr->west;
-    }
+    traverseAndAddMoves(target->west, head, moveWest);
+    traverseAndAddMoves(target->east, head, moveEast);
+    traverseAndAddMoves(target->north, head, moveNorth);
+    traverseAndAddMoves(target->south, head, moveSouth);
 }
 
 Move *createMove(char *coord, int value)
@@ -350,8 +347,23 @@ void printList(Move *head)
     {
         printf("%s-%d, ", tmp->move, tmp->value);
         if (tmp->next == NULL)
-            printf("NULL\n");
+            printf("END\n");
 
         tmp = tmp->next;
+    }
+}
+
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *)) 
+{
+    Square *current = start;
+
+    while (current != NULL) {
+        Move *newMove = createMove(current->coordinates, current->value);
+        addMove(head, newMove);
+
+        if (current->piece != '.') {
+            break;
+        }
+        current = nextSquare(current);
     }
 }
