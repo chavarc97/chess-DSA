@@ -6,8 +6,11 @@
 FILE *file = NULL;
 #define MAX_SQUARES 64
 #define MAX_ROW_COL 8
+// define colors for the board
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
+#define BLUE "\033[0;34m"
+#define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 
 // define piece values
@@ -17,6 +20,12 @@ FILE *file = NULL;
 #define TOWER 5
 #define QUEEN 8
 #define KING 10
+
+// define colors for the moves
+#define M_GREEN 1
+#define M_RED 2
+#define M_BLUE 3
+#define M_YELLOW 4
 
 // structs
 typedef struct Square
@@ -35,6 +44,7 @@ typedef struct Move
 {
     char move[3];
     int value;
+    int moveColor;
     struct Move *next;
 } Move;
 // set the head of the linked list to NULL
@@ -57,11 +67,11 @@ void readBoardFromFile(Square *board, const char *filename);
 void printBoard(Square *board);
 void findMoves(Square *target, Move *head);
 void addMove(Move *h, Move *m);
-Move *createMove(char *coord, int value);
+Move *createMove(char *coord, int value, int moveColor);
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
 void printList(Move *head);
-void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *));
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
 
 // main function
 int main()
@@ -302,13 +312,13 @@ void findMoves(Square *target, Move *head)
 
     printf("Target square: %s\n", t_ptr->coordinates);
     // based on the target location traverse the board orthogonally (Tower movements)
-    traverseAndAddMoves(target->west, head, moveWest);
-    traverseAndAddMoves(target->east, head, moveEast);
-    traverseAndAddMoves(target->north, head, moveNorth);
-    traverseAndAddMoves(target->south, head, moveSouth);
+    traverseAndAddMoves(target->west, head, moveWest, M_RED);
+    traverseAndAddMoves(target->east, head, moveEast, M_BLUE);
+    traverseAndAddMoves(target->north, head, moveNorth, M_GREEN);
+    traverseAndAddMoves(target->south, head, moveSouth, M_YELLOW);
 }
 
-Move *createMove(char *coord, int value)
+Move *createMove(char *coord, int value, int moveColor)
 {
     Move *newMove = (Move *)malloc(sizeof(Move));
     if (newMove == NULL)
@@ -319,6 +329,21 @@ Move *createMove(char *coord, int value)
     strcpy(newMove->move, coord);
     newMove->value = value;
     newMove->next = NULL;
+    switch(moveColor) 
+    {
+        case M_GREEN:
+            newMove->moveColor = M_GREEN;
+            break;
+        case M_RED:
+            newMove->moveColor = M_RED;
+            break;
+        case M_BLUE:
+            newMove->moveColor = M_BLUE;
+            break;
+        case M_YELLOW:
+            newMove->moveColor = M_YELLOW;
+            break;
+    }
     return newMove;
 }
 
@@ -345,7 +370,21 @@ void printList(Move *head)
     printf("List of moves: ");
     while (tmp != NULL)
     {
-        printf("%s-%d, ", tmp->move, tmp->value);
+        switch (tmp->moveColor)
+        {
+        case M_GREEN:
+            printf(GREEN "%s-%d, " RESET, tmp->move, tmp->value);
+            break;
+        case M_RED:
+            printf(RED "%s-%d, " RESET, tmp->move, tmp->value);
+            break;
+        case M_BLUE:
+            printf(BLUE "%s-%d, " RESET, tmp->move, tmp->value);
+            break;
+        case M_YELLOW:
+            printf(YELLOW "%s-%d, " RESET, tmp->move, tmp->value);
+            break;
+        }
         if (tmp->next == NULL)
             printf("END\n");
 
@@ -353,12 +392,12 @@ void printList(Move *head)
     }
 }
 
-void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *)) 
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor) 
 {
     Square *current = start;
 
     while (current != NULL) {
-        Move *newMove = createMove(current->coordinates, current->value);
+        Move *newMove = createMove(current->coordinates, current->value, moveColor);
         addMove(head, newMove);
 
         if (current->piece != '.') {
