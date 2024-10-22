@@ -14,12 +14,15 @@ FILE *file = NULL;
 #define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 // define piece values
-#define PAWN 1
-#define KNIGHT 3
-#define BISHOP 3
-#define TOWER 5
-#define QUEEN 8
-#define KING 10
+typedef enum
+{
+    PAWN = 1,
+    KNIGHT = 3,
+    BISHOP = 3,
+    TOWER = 5,
+    QUEEN = 8,
+    KING = 10
+} PieceValue;
 
 // colors for the moves
 typedef enum
@@ -249,24 +252,12 @@ void setPieceValue(Square *board)
 {
     switch (board->piece)
     {
-    case 'P':
-        board->value = PAWN;
-        break;
-    case 'A':
-        board->value = BISHOP;
-        break;
-    case 'C':
-        board->value = KNIGHT;
-        break;
-    case 'T':
-        board->value = TOWER;
-        break;
-    case 'Q':
-        board->value = QUEEN;
-        break;
-    case 'K':
-        board->value = KING;
-        break;
+    case 'P': board->value = PAWN; break;
+        case 'A': board->value = BISHOP; break;
+        case 'C': board->value = KNIGHT; break;
+        case 'T': board->value = TOWER; break;
+        case 'Q': board->value = QUEEN; break;
+        case 'K': board->value = KING; break;
     }
 }
 
