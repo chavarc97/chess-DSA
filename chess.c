@@ -3,7 +3,7 @@
 #include <string.h>
 
 // constants
-FILE *file = NULL;
+FILE *file = NULL; //FILE pointer
 #define MAX_SQUARES 64
 #define MAX_ROW_COL 8
 
@@ -57,7 +57,7 @@ typedef struct Move
 typedef struct Stack
 {
     Move *top;
-    Move *prev;
+    struct Stack *prev;
 } Stack;
 
 
@@ -426,3 +426,5 @@ void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square
         current = nextSquare(current);
     }
 }
+
+
