@@ -83,12 +83,16 @@ Square* moveSouth(Square *s) { return s->south; }
 void readBoardFromFile(Square *board, const char *filename);
 //Move Management
 void findMoves(Square *board, Move *head);
+Move *createMove(char *coord, int value, MoveColor moveColor);
+void addMove(Move *h, Move *m);
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
 //Stack Managment
 
 
 //Display functions
 void printBoard(Square *board);
-
+void printList(Move *head);
+void printColorList(Move *move);
 
 int main()
 {
@@ -99,8 +103,13 @@ int main()
     printBoard(board);
 
     Square *target = findSquare(board);
-
-    testBoard();
+    printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
+    findMoves(target, head);
+    printList(head);
+    // Step 3 create a stack with the 5 top moves
+    // Free memory
+    free(board);
+   
     return 0;
 }
 
@@ -363,3 +372,57 @@ Move *createMove(char *coord, int value, MoveColor moveColor)
     return newMove;
 }
 
+void addMove(Move *h, Move *m)
+{
+    Move *tmp = head;
+    if (!tmp)
+        head = m;
+    else
+    {
+        while (tmp->next != NULL)
+            tmp = tmp->next;
+        tmp->next = m;
+    }
+}
+
+void printList(Move *head)
+{
+    Move *tmp = head;
+    printf("List of moves: ");
+    while (tmp != NULL)
+    {
+        printColorList(tmp);
+        if (tmp->next == NULL)
+            printf(RESET"\n");
+        printf("%s", tmp->next!=NULL ? ", " : "\n");
+        tmp = tmp->next;
+    }
+}
+
+void printColorList(Move *move)
+{
+    char *color;
+    switch (move->moveColor) {
+        case M_GREEN:  color = GREEN;  break;
+        case M_RED:    color = RED;    break;
+        case M_BLUE:   color = BLUE;   break;
+        case M_YELLOW: color = YELLOW; break;
+        default:          color = RESET;
+    }
+    printf("%s%s-%d", color, move->move, move->value);
+}
+
+void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor) 
+{
+    Square *current = start;
+
+    while (current != NULL) {
+        Move *newMove = createMove(current->coordinates, current->value, moveColor);
+        addMove(head, newMove);
+
+        if (current->piece != '.') {
+            break;
+        }
+        current = nextSquare(current);
+    }
+}
