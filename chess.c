@@ -58,7 +58,7 @@ Square* moveSouth(Square *s) { return s->south; }
 typedef struct Stack
 {
     Move *top;
-    Move *prev;
+    struct Stack *prev;
 } Stack;
 
 // function prototypes
