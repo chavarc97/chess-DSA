@@ -50,6 +50,7 @@ typedef struct Move
 {
     char move[3];
     int value;
+    int moveColor;
     struct Move *next;
 } Move;
 
@@ -70,6 +71,7 @@ Move *head = NULL;
 //Board managment
 Square *createBoard();
 void setPieceValue(Square *board);
+Square *findSquare ( Square *board);
 
 
 //Board Navigation
@@ -87,9 +89,17 @@ void findMoves(Square *board, Move *head);
 //Display functions
 void printBoard(Square *board);
 
-// main function
+
 int main()
 {
+
+    Square *board = createBoard();
+    //Example usage
+    readBoardFromFile(board, "T3.txt");
+    printBoard(board);
+
+    Square *target = findSquare(board);
+
     testBoard();
     return 0;
 }
@@ -311,3 +321,45 @@ void setPieceValue(Square *board)
         break;
     }
 }
+
+Square *findSquare(Square *board){
+  
+  for(int i = 0; i<64; i++){
+    if(board[i].isTarget){
+        return &board[i];
+    }
+    
+
+  }
+  return NULL;
+
+}
+
+void findMoves(Square *target, Move *head)
+{
+    // initialize 2 ptr to point to the target square and the linked list of moves
+    Square *t_ptr = target;
+
+    printf("Target square: %s\n", t_ptr->coordinates);
+    // based on the target location traverse the board orthogonally (Tower movements)
+    traverseAndAddMoves(target->west, head, moveWest, M_RED);
+    traverseAndAddMoves(target->east, head, moveEast, M_BLUE);
+    traverseAndAddMoves(target->north, head, moveNorth, M_GREEN);
+    traverseAndAddMoves(target->south, head, moveSouth, M_YELLOW);
+}
+
+Move *createMove(char *coord, int value, MoveColor moveColor)
+{
+    Move *newMove = (Move *)malloc(sizeof(Move));
+    if (newMove == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    strcpy(newMove->move, coord);
+    newMove->value = value;
+    newMove->next = NULL;
+    newMove->moveColor = moveColor;
+    return newMove;
+}
+
