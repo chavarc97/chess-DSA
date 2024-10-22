@@ -85,6 +85,9 @@ Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
 void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
 // Stack Management
+void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack);
+void push(Stack *s, Move *m);
+Move *pop(Stack *s);
 
 // Display Functions
 void printBoard(Square *board);
@@ -103,6 +106,7 @@ int main()
     findMoves(target, head);
     printList(head);
     // Step 3 create a stack with the 5 top moves
+
     // Free memory
     free(board);
     return 0;
@@ -355,3 +359,20 @@ void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square
         current = nextSquare(current);
     }
 }
+
+/* void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
+{
+    // from the list of moves, find the top 5 moves
+    // iterate through the list of moves ignoring moves with value 0
+    // when a move with value > 0 is found push it to the stack
+    // if you found a move smaller than the top of the stack, pop the top from the stack and push it into the aux stack
+    // push the new move into the stack and then push the top move from the aux stack back into the stack
+}
+void push(Stack *s, Move *m)
+{
+
+}
+Move *pop(Stack *s)
+{
+
+} */
