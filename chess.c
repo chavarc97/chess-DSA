@@ -67,14 +67,25 @@ typedef Square* (*MovementFunction)(Square*);
 Move *head = NULL;
 
 // function prototypes
+//Board managment
 Square *createBoard();
-void readBoardFromFile(Square *board, const char *filename);
-void printBoard(Square *board);
-void findMoves(Square *board, int row, int col);
-void pushMove(char *move, int value);
-void printStack();
-void testBoard();
 void setPieceValue(Square *board);
+
+
+//Board Navigation
+Square* moveWest(Square *s) { return s->west; }
+Square* moveEast(Square *s) { return s->east; }
+Square* moveNorth(Square *s) { return s->north; }
+Square* moveSouth(Square *s) { return s->south; }
+//File Managment
+void readBoardFromFile(Square *board, const char *filename);
+//Move Management
+void findMoves(Square *board, Move *head);
+//Stack Managment
+
+
+//Display functions
+void printBoard(Square *board);
 
 // main function
 int main()
