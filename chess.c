@@ -3,19 +3,19 @@
 #include <string.h>
 
 // constants
-FILE *file = NULL; //FILE pointer
+FILE *file = NULL;
 #define MAX_SQUARES 64
 #define MAX_ROW_COL 8
 
-//ANSI color codes
+// ANSI color codes
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
 #define BLUE "\033[0;34m"
 #define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
-
 // define piece values
-typedef enum{
+typedef enum
+{
     PAWN = 1,
     KNIGHT = 3,
     BISHOP = 3,
@@ -24,7 +24,7 @@ typedef enum{
     KING = 10
 } PieceValue;
 
-//Colors for the moves
+// colors for the moves
 typedef enum
 {
     M_GREEN = 1,
@@ -32,6 +32,7 @@ typedef enum
     M_BLUE,
     M_YELLOW
 } MoveColor;
+
 
 // Data structures
 typedef struct Square
@@ -60,56 +61,54 @@ typedef struct Stack
     struct Stack *prev;
 } Stack;
 
-
-//Function pointers for movement
+// Function pointers for movement
 typedef Square* (*MovementFunction)(Square*);
 
-//Global variables 
+// Global variables
 Move *head = NULL;
 
-// function prototypes
-//Board managment
+// function prototypes >>>>>>>>>>>>>>>>>>>>>>>>
+// Board management
 Square *createBoard();
 void setPieceValue(Square *board);
-Square *findSquare ( Square *board);
-
-
-//Board Navigation
+Square *findSquare(Square *board);
+// Board Navigation
 Square* moveWest(Square *s) { return s->west; }
 Square* moveEast(Square *s) { return s->east; }
 Square* moveNorth(Square *s) { return s->north; }
 Square* moveSouth(Square *s) { return s->south; }
-//File Managment
+// File Management
 void readBoardFromFile(Square *board, const char *filename);
-//Move Management
-void findMoves(Square *board, Move *head);
+// Move Management
+void findMoves(Square *target, Move *head);
 Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
 void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
-//Stack Managment
+// Stack Management
+void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack);
+void push(Stack *s, Move *m);
+Move *pop(Stack *s);
 
-
-//Display functions
+// Display Functions
 void printBoard(Square *board);
 void printList(Move *head);
 void printColorList(Move *move);
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 int main()
 {
-
     Square *board = createBoard();
-    //Example usage
+    // Example usage
     readBoardFromFile(board, "T3.txt");
     printBoard(board);
-
     Square *target = findSquare(board);
     printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
     findMoves(target, head);
     printList(head);
     // Step 3 create a stack with the 5 top moves
+
     // Free memory
     free(board);
-   
     return 0;
 }
 
@@ -132,13 +131,13 @@ Square *createBoard()
     {
         for (int col = 0; col < 8; col++)
         {
-            /* 
-                * The logic behind the following lines is to set the coordinates of each square on the board.
-                * The coordinates are set in the format of "A1", "A2", "A3", ..., "H8".
-                * The ASCII value of 'A' is 65, and the ASCII value of '1' is 49.
-                * So by implementing [row * 8 + col] we are able to set the coordinates of each square on the board.
-                * For example, if row = 0 and col = 0, the coordinates of the square will be "A1" or if seen as a 1D array, it will be board[0].
-                * Then by incrementing the row and col, we are able to set the coordinates of the rest of the squares on the board.
+            /*
+             * The logic behind the following lines is to set the coordinates of each square on the board.
+             * The coordinates are set in the format of "A1", "A2", "A3", ..., "H8".
+             * The ASCII value of 'A' is 65, and the ASCII value of '1' is 49.
+             * So by implementing [row * 8 + col] we are able to set the coordinates of each square on the board.
+             * For example, if row = 0 and col = 0, the coordinates of the square will be "A1" or if seen as a 1D array, it will be board[0].
+             * Then by incrementing the row and col, we are able to set the coordinates of the rest of the squares on the board.
              */
             board[row * 8 + col].coordinates[0] = 'A' + col;
             board[row * 8 + col].coordinates[1] = '1' + row;
@@ -171,29 +170,17 @@ void printBoard(Square *board)
             Square *current = &board[row * 8 + col];
             // check if the square is a target
             if (current->isTarget)
-            {
                 printf(GREEN "%c  " RESET, current->piece);
-            }
-            else if (current->isTarget == 0 && current->piece != '.')
-            {
+            else if (current->piece != '.')
                 printf(RED "%c  " RESET, current->piece);
-            }
             else
-            {
                 printf("%c  ", current->piece);
-            }
             if (col < 7)
-            {
                 printf(" ");
-            }
         }
-        printf("| %d", 1 + row); // Added row labels at right
-        printf("\n");
+        printf("| %d\n", 1 + row); // Added row labels at right
         if (row < 7)
-        {
-            printf("  ");
-            printf("\n");
-        }
+            printf("  \n");
     }
     printf("   ________________________________\n");
     printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at bottom
@@ -215,25 +202,16 @@ void readBoardFromFile(Square *board, const char *filename)
         return;
     }
 
-    // Reset all target flags first
-    for (int i = 0; i < 64; i++)
-    {
-        board[i].isTarget = 0;
-    }
-
-    // Read board configuration
+    /*
+     * The following while loop is reading the board layout from the file.
+     * The loop will continue until it reaches the end of the file or until it has read 8 rows.
+     * The fgets function reads a line from the file and stores it in the variable line.
+     * The loop then iterates through each character in the line and sets the piece value of the square on the board.
+     * The piece value is set by calling the setPieceValue function.
+     * The loop then increments the row variable to move to the next row.
+     */
     int row = 0;
     char line[18];
-
-    // Read the board layout first (8 rows)
-    /* 
-        * The following while loop is reading the board layout from the file.
-        * The loop will continue until it reaches the end of the file or until it has read 8 rows.
-        * The fgets function reads a line from the file and stores it in the variable line.
-        * The loop then iterates through each character in the line and sets the piece value of the square on the board.
-        * The piece value is set by calling the setPieceValue function.
-        * The loop then increments the row variable to move to the next row.
-     */
     while (row < 8 && fgets(line, 18, file) != NULL)
     {
         for (int col = 0; col < 8; col++)
@@ -250,12 +228,6 @@ void readBoardFromFile(Square *board, const char *filename)
 
     // Read the target coordinate (e.g., "B2")
     char targetCoord[4]; // Increased size to handle newline
-    /* 
-        * The following if statement is reading the target coordinate from the file.
-        * The fgets function reads the target coordinate from the file and stores it in the variable targetCoord.
-        * The target coordinate is then converted to a 0-based index for row and column.
-        * The target square is then marked by setting the isTarget flag to 1.
-     */
     if (fgets(targetCoord, sizeof(targetCoord), file) != NULL)
     {
         // Remove newline if present
@@ -268,18 +240,11 @@ void readBoardFromFile(Square *board, const char *filename)
         int targetRow = targetCoord[1] - '1';
         int targetCol = targetCoord[0] - 'A';
 
-        // Debug print
-        printf("Target coordinate: %s (row: %d, col: %d)\n",
-               targetCoord, targetRow + 1, targetCol + 1);
-
         // Mark the target square
         if (targetRow >= 0 && targetRow < 8 && targetCol >= 0 && targetCol < 8)
         {
             int targetIndex = targetRow * 8 + targetCol;
             board[targetIndex].isTarget = 1;
-            printf("Marking target at index: %d\n", targetIndex);
-            printf("Target square: %s\n", board[targetIndex].coordinates);
-            printf("Target value: %d\n", board[targetIndex].value);
         }
     }
 
@@ -287,61 +252,29 @@ void readBoardFromFile(Square *board, const char *filename)
     fclose(file);
 }
 
-/* 
- Function to test the board configuration will be deleted in the final version
- */
-void testBoard()
-{
-    Square *board = createBoard();
-
-    // Example usage
-    readBoardFromFile(board, "T2.txt");
-    printBoard(board);
-
-    free(board);
-}
-
-/* 
-    This function sets the value of the piece on the square.
-    The value of the piece is set based on the piece type read from the file.
-    and then a value is assigned according to the piece type.
- */
 void setPieceValue(Square *board)
 {
     switch (board->piece)
     {
-    case 'P':
-        board->value = PAWN;
-        break;
-    case 'A':
-        board->value = BISHOP;
-        break;
-    case 'C':
-        board->value = KNIGHT;
-        break;
-    case 'T':
-        board->value = TOWER;
-        break;
-    case 'Q':
-        board->value = QUEEN;
-        break;
-    case 'K':
-        board->value = KING;
-        break;
+    case 'P': board->value = PAWN; break;
+        case 'A': board->value = BISHOP; break;
+        case 'C': board->value = KNIGHT; break;
+        case 'T': board->value = TOWER; break;
+        case 'Q': board->value = QUEEN; break;
+        case 'K': board->value = KING; break;
     }
 }
 
-Square *findSquare(Square *board){
-  
-  for(int i = 0; i<64; i++){
-    if(board[i].isTarget){
-        return &board[i];
+Square *findSquare(Square *board)
+{
+    for (int i = 0; i < 64; i++)
+    {
+        if (board[i].isTarget)
+        {
+            return &board[i];
+        }
     }
-    
-
-  }
-  return NULL;
-
+    return NULL;
 }
 
 void findMoves(Square *target, Move *head)
@@ -427,4 +360,19 @@ void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square
     }
 }
 
+/* void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
+{
+    // from the list of moves, find the top 5 moves
+    // iterate through the list of moves ignoring moves with value 0
+    // when a move with value > 0 is found push it to the stack
+    // if you found a move smaller than the top of the stack, pop the top from the stack and push it into the aux stack
+    // push the new move into the stack and then push the top move from the aux stack back into the stack
+}
+void push(Stack *s, Move *m)
+{
 
+}
+Move *pop(Stack *s)
+{
+
+} */
