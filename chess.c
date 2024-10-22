@@ -6,19 +6,34 @@
 FILE *file = NULL;
 #define MAX_SQUARES 64
 #define MAX_ROW_COL 8
+
+//ANSI color codes
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
+#define BLUE "\033[0;34m"
+#define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 
 // define piece values
-#define PAWN 1
-#define KNIGHT 3
-#define BISHOP 3
-#define TOWER 5
-#define QUEEN 8
-#define KING 10
+typedef enum{
+    PAWN = 1,
+    KNIGHT = 3,
+    BISHOP = 3,
+    TOWER = 5,
+    QUEEN = 8,
+    KING = 10
+} PieceValue;
 
-// structs
+//Colors for the moves
+typedef enum
+{
+    M_GREEN = 1,
+    M_RED,
+    M_BLUE,
+    M_YELLOW
+} MoveColor;
+
+// Data structures
 typedef struct Square
 {
     char coordinates[3]; // A1, A2, A3, ..., H8
@@ -43,6 +58,13 @@ typedef struct Stack
     Move *top;
     Move *prev;
 } Stack;
+
+
+//Function pointers for movement
+typedef Square* (*MovementFunction)(Square*);
+
+//Global variables 
+Move *head = NULL;
 
 // function prototypes
 Square *createBoard();
