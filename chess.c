@@ -89,6 +89,7 @@ void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack);
 void push(Stack *s, Move *m);
 Move *pop(Stack *s);
 Stack * initStack();
+void printStack(Stack *s);
 
 // Display Functions
 void printBoard(Square *board);
@@ -110,6 +111,8 @@ int main()
     Stack *topMoves = initStack();
     Stack *auxStack = initStack();
     findTopMoves(head, topMoves, auxStack);
+    printStack(topMoves);
+    free(head);
     // Free memory
     free(board);
     return 0;
@@ -415,6 +418,7 @@ Stack * initStack(){
     }
 
 }
+
 void push(Stack *s, Move *m)
 {
     Stack *newTop = (Stack*)malloc(sizeof(Stack));
@@ -436,7 +440,6 @@ void push(Stack *s, Move *m)
     }
 }
 
-
 Move *pop(Stack *s)
 {
 
@@ -452,3 +455,17 @@ free(top);
 
 return val;
 } 
+
+void printStack(Stack *s)
+{
+    Stack *tmp = s;
+    printf("Top Moves:\n");
+    int count = 1;
+    while (tmp != NULL)
+    {
+        printColorList(tmp->top);
+        printf("%d.-\t%s",count ,tmp->prev!=NULL ? ", " : "\n");
+        count++;
+        tmp = tmp->prev;
+    }
+}
