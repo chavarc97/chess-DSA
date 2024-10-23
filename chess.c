@@ -389,6 +389,11 @@ Stack * initStack(){
             push(topMoves,m_ptr);
         }
         else if (m_ptr->value >0){
+         
+         while(m_ptr->value < topMoves->top->value){
+           
+
+         }
 
         }
     }
