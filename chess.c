@@ -85,9 +85,9 @@ Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
 void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
 // Stack Management
-void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack);
-void push(Stack *s, Move *m);
-Move *pop(Stack *s);
+void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack);
+void push(Stack **s, Move *m);
+Move *pop(Stack **s);
 Stack * initStack();
 void printStack(Stack *s);
 
@@ -110,7 +110,7 @@ int main()
     // Step 3 create a stack with the 5 top moves
     Stack *topMoves = initStack();
     Stack *auxStack = initStack();
-    findTopMoves(head, topMoves, auxStack);
+    findTopMoves(head, &topMoves, &auxStack);
     printStack(topMoves);
     free(head);
     // Free memory
@@ -378,7 +378,7 @@ Stack * initStack(){
    return s;
 }
 
- void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
+ void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
 {
     // from the list of moves, find the top 5 moves
     // iterate through the list of moves ignoring moves with value 0
@@ -389,37 +389,38 @@ Stack * initStack(){
 
     Move *m_ptr = head;
     while(m_ptr != NULL){
-        if(topMoves == NULL && m_ptr->value>0){
+        if((*topMoves)->top == NULL && m_ptr->value>0){
             push(topMoves,m_ptr);
         }
         else if (m_ptr->value >0){
          
-         while(m_ptr->value < topMoves->top->value){
+         while((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value){
            
            Move * tmp = pop(topMoves);
            printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
            push(auxStack, tmp);
-           printf("Pushed to aux: %s-%d\n", auxStack->top->move, auxStack->top->value);
+           printf("Pushed to aux: %s-%d\n", (*auxStack)->top->move, (*auxStack)->top->value);
 
          }
          
          push (topMoves, m_ptr);
         
-        while(auxStack!= NULL){
+        while((*auxStack)!= NULL){
            
            Move * tmp = pop(auxStack);
            printf("Popped from aux: %s-%d", tmp->move, tmp->value);
            push(topMoves, tmp);
-           printf("Pushed to topMoves: %s-%d", topMoves->top->move, topMoves->top->value);
+           printf("Pushed to topMoves: %s-%d", (*topMoves)->top->move, (*topMoves)->top->value);
 
          }
+         m_ptr = m_ptr->next;
 
         }
     }
 
 }
 
-void push(Stack *s, Move *m)
+void push(Stack **s, Move *m)
 {
     Stack *newTop = (Stack*)malloc(sizeof(Stack));
     if(!newTop)
@@ -427,30 +428,30 @@ void push(Stack *s, Move *m)
         printf("\nMemory allocation failed\n");
         return;
     }
-    if (s->top==NULL)
+    if ((*s)->top==NULL)
     {
-        s->top = m;
-        s->prev = NULL;
+        (*s)->top = m;
+        (*s)->prev = NULL;
     }
     else
     {
         newTop->top = m;
-        newTop->prev = s;
-        s = newTop;
+        newTop->prev = *s;
+        *s = newTop;
     }
 }
 
-Move *pop(Stack *s)
+Move *pop(Stack **s)
 {
 
-if (s->top ==NULL){
+if ((*s)->top ==NULL){
     printf("\n Stack Underflow\n");
     return 0;
 }
 
-Move *val = s->top;
-Stack *top = s->top;
-s->top = s->prev;
+Move *val = (*s)->top;
+Stack *top = *s;
+(*s)->top = top->prev;
 free(top);
 
 return val;
@@ -468,4 +469,5 @@ void printStack(Stack *s)
         count++;
         tmp = tmp->prev;
     }
+
 }
