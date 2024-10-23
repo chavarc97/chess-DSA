@@ -107,7 +107,9 @@ int main()
     findMoves(target, head);
     printList(head);
     // Step 3 create a stack with the 5 top moves
-
+    Stack *topMoves = initStack();
+    Stack *auxStack = initStack();
+    findTopMoves(head, topMoves, auxStack);
     // Free memory
     free(board);
     return 0;
@@ -371,7 +373,6 @@ Stack * initStack(){
    s->top = NULL;
    s->prev = NULL;
    return s;
-
 }
 
  void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
@@ -416,7 +417,23 @@ Stack * initStack(){
 }
 void push(Stack *s, Move *m)
 {
-
+    Stack *newTop = (Stack*)malloc(sizeof(Stack));
+    if(!newTop)
+    {
+        printf("\nMemory allocation failed\n");
+        return;
+    }
+    if (s->top==NULL)
+    {
+        s->top = m;
+        s->prev = NULL;
+    }
+    else
+    {
+        newTop->top = m;
+        newTop->prev = s;
+        s = newTop;
+    }
 }
 Move *pop(Stack *s)
 {
