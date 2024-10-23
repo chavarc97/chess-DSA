@@ -108,6 +108,8 @@ int main()
     findMoves(target, head);
     printList(head);
     // Step 3 create a stack with the 5 top moves
+    //char tm[10] = {"topMoves"};
+
     Stack *topMoves = initStack();
     Stack *auxStack = initStack();
     findTopMoves(head, &topMoves, &auxStack);
@@ -386,8 +388,12 @@ Stack * initStack(){
     // if you found a move smaller than the top of the stack, pop the top from the stack and push it into the aux stack
     // push the new move into the stack and then push the top move from the aux stack back into the stack
 
+    //Top stack aux---------------------------
 
     Move *m_ptr = head;
+    printf("%p\n", m_ptr);
+    printf("%p\n", topMoves);
+    printf("%p\n", auxStack);
     while(m_ptr != NULL){
         if((*topMoves)->top == NULL && m_ptr->value>0){
             push(topMoves,m_ptr);
@@ -446,13 +452,15 @@ Move *pop(Stack **s)
 
 if ((*s)->top ==NULL){
     printf("\n Stack Underflow\n");
+    printf("%p", s );
     return 0;
 }
 
-Move *val = (*s)->top;
-Stack *top = *s;
-(*s)->top = top->prev;
-free(top);
+Stack *temp = *s;
+*s = (*s)->prev;
+Move *val = temp->top;
+free(temp);
+
 
 return val;
 } 
