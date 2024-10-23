@@ -435,7 +435,20 @@ void push(Stack *s, Move *m)
         s = newTop;
     }
 }
+
+
 Move *pop(Stack *s)
 {
 
+if (s->top ==NULL){
+    printf("\n Stack Underflow\n");
+    return 0;
+}
+
+Move *val = s->top;
+Stack *top = s->top;
+s->top = s->prev;
+free(top);
+
+return val;
 } 
