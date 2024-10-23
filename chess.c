@@ -88,6 +88,7 @@ void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square
 void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack);
 void push(Stack *s, Move *m);
 Move *pop(Stack *s);
+Stack * initStack();
 
 // Display Functions
 void printBoard(Square *board);
@@ -360,13 +361,38 @@ void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square
     }
 }
 
-/* void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
+Stack * initStack(){
+    Stack *s = (Stack*)malloc(sizeof(Stack));
+   if(!s)
+   {
+    printf("\nMemory allocation failed\n");
+    return NULL;
+   }
+   s->top = NULL;
+   s->prev = NULL;
+   return s;
+
+}
+
+ void findTopMoves(Move *head, Stack *topMoves, Stack *auxStack)
 {
     // from the list of moves, find the top 5 moves
     // iterate through the list of moves ignoring moves with value 0
     // when a move with value > 0 is found push it to the stack
     // if you found a move smaller than the top of the stack, pop the top from the stack and push it into the aux stack
     // push the new move into the stack and then push the top move from the aux stack back into the stack
+
+
+    Move *m_ptr = head;
+    while(m_ptr != NULL){
+        if(topMoves == NULL && m_ptr->value>0){
+            push(topMoves,m_ptr);
+        }
+        else if (m_ptr->value >0){
+
+        }
+    }
+
 }
 void push(Stack *s, Move *m)
 {
@@ -375,4 +401,4 @@ void push(Stack *s, Move *m)
 Move *pop(Stack *s)
 {
 
-} */
+} 
