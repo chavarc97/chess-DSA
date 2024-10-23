@@ -392,6 +392,21 @@ Stack * initStack(){
          
          while(m_ptr->value < topMoves->top->value){
            
+           Move * tmp = pop(topMoves);
+           printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
+           push(auxStack, tmp);
+           printf("Pushed to aux: %s-%d\n", auxStack->top->move, auxStack->top->value);
+
+         }
+         
+         push (topMoves, m_ptr);
+        
+        while(auxStack!= NULL){
+           
+           Move * tmp = pop(auxStack);
+           printf("Popped from aux: %s-%d", tmp->move, tmp->value);
+           push(topMoves, tmp);
+           printf("Pushed to topMoves: %s-%d", topMoves->top->move, topMoves->top->value);
 
          }
 
