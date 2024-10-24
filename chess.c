@@ -391,13 +391,15 @@ Stack * initStack(){
     //Top stack aux---------------------------
 
     Move *m_ptr = head;
+    // chek of head and memory of the stacks 
     printf("%p\n", m_ptr);
     printf("%p\n", topMoves);
     printf("%p\n", auxStack);
 
     while(m_ptr != NULL){
-        if( m_ptr->value>0){
-            if((*topMoves)->top == NULL ){
+
+        if( m_ptr->value>0){  //before (while) -- after (if): avoid repeating verifications
+            if((*topMoves)->top == NULL ){  
             push(topMoves,m_ptr);
             printf("First push topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
             } 
@@ -415,7 +417,7 @@ Stack * initStack(){
                 push (topMoves, m_ptr);
                 printf("Pushed topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
 
-                while((*auxStack)->top!= NULL){
+                while((*auxStack)->top!= NULL){// Instead of (*auxStack) != NULL, use this so they cant have underflow.
                 
                     Move * tmp = pop(auxStack);
                     printf("Popped from aux: %s-%d\n", tmp->move, tmp->value);
@@ -441,6 +443,8 @@ void push(Stack **s, Move *m){
         printf("\nMemory allocation failed\n");
         return;
     }
+
+    //EXPLANATION: the last push to topMoves was not done because of this if
     //if ((*s)->top==NULL)
     //{
     //    (*s)->top = m;
