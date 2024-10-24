@@ -93,7 +93,7 @@ void printStack(Stack *s);
 // Display Functions
 void printBoard(Square *board);
 void printList(Move *head);
-void printColorList(Move *move);
+void printColorList(Move *move, int flag);
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 int main()
@@ -343,7 +343,7 @@ void printList(Move *head)
     printf("List of moves: ");
     while (tmp != NULL)
     {
-        printColorList(tmp);
+        printColorList(tmp, 0);
         if (tmp->next == NULL)
             printf(RESET "\n");
         printf("%s", tmp->next != NULL ? ", " : "\n");
@@ -351,8 +351,9 @@ void printList(Move *head)
     }
 }
 
-void printColorList(Move *move)
+void printColorList(Move *move, int moveOrStack)
 {
+    int flag = moveOrStack;
     char *color;
     switch (move->moveColor)
     {
@@ -371,7 +372,10 @@ void printColorList(Move *move)
     default:
         color = RESET;
     }
-    printf("%s%s-%d", color, move->move, move->value);
+    if (flag == 0)
+        printf("%s%s-%d", color, move->move, move->value);
+    else
+        printf("%s%s-%d\n", color, move->move, move->value);
 }
 
 void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor)
@@ -428,30 +432,21 @@ void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
             if ((*topMoves)->top == NULL)
             {
                 push(topMoves, m_ptr);
-                printf("First push topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
             }
             else
             {
-
                 while ((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value)
                 {
-
                     Move *tmp = pop(topMoves);
-                    printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
                     push(auxStack, tmp);
-                    printf("Pushed to aux: %s-%d\n", (*auxStack)->top->move, (*auxStack)->top->value);
                 }
 
                 push(topMoves, m_ptr);
-                printf("Pushed topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
-
                 while ((*auxStack)->top != NULL)
                 { // Instead of (*auxStack) != NULL, use this so they cant have underflow.
 
                     Move *tmp = pop(auxStack);
-                    printf("Popped from aux: %s-%d\n", tmp->move, tmp->value);
                     push(topMoves, tmp);
-                    printf("Pushed to topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
                 }
             }
         }
@@ -515,25 +510,7 @@ void printStack(Stack *s)
         printf("TOP MOVES: \n");
         while (s != NULL && s->top != NULL)
         {
-            char *color;
-            switch (s->top->moveColor)
-            {
-            case M_GREEN:
-                color = GREEN;
-                break;
-            case M_RED:
-                color = RED;
-                break;
-            case M_BLUE:
-                color = BLUE;
-                break;
-            case M_YELLOW:
-                color = YELLOW;
-                break;
-            default:
-                color = RESET;
-            }
-            printf("%s%s-%d\n",color, s->top->move, s->top->value);
+            printColorList(s->top, 1);
             s = s->prev;
         }
     }
