@@ -394,57 +394,64 @@ Stack * initStack(){
     printf("%p\n", m_ptr);
     printf("%p\n", topMoves);
     printf("%p\n", auxStack);
+
     while(m_ptr != NULL){
-        if((*topMoves)->top == NULL && m_ptr->value>0){
+        if( m_ptr->value>0){
+            if((*topMoves)->top == NULL ){
             push(topMoves,m_ptr);
-        }
-        else if (m_ptr->value >0){
+            printf("First push topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
+            } 
+            else {
          
-         while((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value){
-           
-           Move * tmp = pop(topMoves);
-           printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
-           push(auxStack, tmp);
-           printf("Pushed to aux: %s-%d\n", (*auxStack)->top->move, (*auxStack)->top->value);
+                while((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value){
+            
+                    Move * tmp = pop(topMoves);
+                    printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
+                    push(auxStack, tmp);
+                    printf("Pushed to aux: %s-%d\n", (*auxStack)->top->move, (*auxStack)->top->value);
 
-         }
+                }
          
-         push (topMoves, m_ptr);
-        
-        while((*auxStack)!= NULL){
-           
-           Move * tmp = pop(auxStack);
-           printf("Popped from aux: %s-%d", tmp->move, tmp->value);
-           push(topMoves, tmp);
-           printf("Pushed to topMoves: %s-%d", (*topMoves)->top->move, (*topMoves)->top->value);
+                push (topMoves, m_ptr);
+                printf("Pushed topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
 
+                while((*auxStack)->top!= NULL){
+                
+                    Move * tmp = pop(auxStack);
+                    printf("Popped from aux: %s-%d\n", tmp->move, tmp->value);
+                    push(topMoves, tmp);
+                    printf("Pushed to topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
+
+                }
+         
+
+            }
+     
          }
-         m_ptr = m_ptr->next;
+    m_ptr = m_ptr->next;
 
-        }
     }
-
 }
 
-void push(Stack **s, Move *m)
-{
+void push(Stack **s, Move *m){
+
     Stack *newTop = (Stack*)malloc(sizeof(Stack));
     if(!newTop)
     {
         printf("\nMemory allocation failed\n");
         return;
     }
-    if ((*s)->top==NULL)
-    {
-        (*s)->top = m;
-        (*s)->prev = NULL;
-    }
-    else
-    {
+    //if ((*s)->top==NULL)
+    //{
+    //    (*s)->top = m;
+    //    (*s)->prev = NULL;
+   // }
+   // else
+    //{
         newTop->top = m;
         newTop->prev = *s;
         *s = newTop;
-    }
+    //}
 }
 
 Move *pop(Stack **s)
@@ -465,6 +472,7 @@ free(temp);
 return val;
 } 
 
+//TODO: Correct printStack
 void printStack(Stack *s)
 {
     Stack *tmp = s;
