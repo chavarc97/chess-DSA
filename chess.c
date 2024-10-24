@@ -33,7 +33,6 @@ typedef enum
     M_YELLOW
 } MoveColor;
 
-
 // Data structures
 typedef struct Square
 {
@@ -62,7 +61,7 @@ typedef struct Stack
 } Stack;
 
 // Function pointers for movement
-typedef Square* (*MovementFunction)(Square*);
+typedef Square *(*MovementFunction)(Square *);
 
 // Global variables
 Move *head = NULL;
@@ -73,22 +72,22 @@ Square *createBoard();
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
 // Board Navigation
-Square* moveWest(Square *s) { return s->west; }
-Square* moveEast(Square *s) { return s->east; }
-Square* moveNorth(Square *s) { return s->north; }
-Square* moveSouth(Square *s) { return s->south; }
+Square *moveWest(Square *s) { return s->west; }
+Square *moveEast(Square *s) { return s->east; }
+Square *moveNorth(Square *s) { return s->north; }
+Square *moveSouth(Square *s) { return s->south; }
 // File Management
 void readBoardFromFile(Square *board, const char *filename);
 // Move Management
 void findMoves(Square *target, Move *head);
 Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
-void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor);
+void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor);
 // Stack Management
 void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack);
 void push(Stack **s, Move *m);
 Move *pop(Stack **s);
-Stack * initStack();
+Stack *initStack();
 void printStack(Stack *s);
 
 // Display Functions
@@ -108,7 +107,7 @@ int main()
     findMoves(target, head);
     printList(head);
     // Step 3 create a stack with the 5 top moves
-    //char tm[10] = {"topMoves"};
+    // char tm[10] = {"topMoves"};
 
     Stack *topMoves = initStack();
     Stack *auxStack = initStack();
@@ -148,7 +147,7 @@ Square *createBoard()
              * Then by incrementing the row and col, we are able to set the coordinates of the rest of the squares on the board.
              */
             board[row * 8 + col].coordinates[0] = 'A' + col;
-            board[row * 8 + col].coordinates[1] = '1' + row;
+            board[row * 8 + col].coordinates[1] = '8' - row;
             board[row * 8 + col].coordinates[2] = '\0';
             board[row * 8 + col].piece = '.';
             board[row * 8 + col].value = 0;
@@ -172,7 +171,7 @@ void printBoard(Square *board)
     // Print the board with connections
     for (int row = 0; row < 8; row++)
     {
-        printf("%d | ", 1 + row); // Added row labels at left
+        printf("%d | ", 8 - row); // Added row labels at left
         for (int col = 0; col < 8; col++)
         {
             Square *current = &board[row * 8 + col];
@@ -186,7 +185,7 @@ void printBoard(Square *board)
             if (col < 7)
                 printf(" ");
         }
-        printf("| %d\n", 1 + row); // Added row labels at right
+        printf("| %d\n", 8 - row); // Added row labels at right
         if (row < 7)
             printf("  \n");
     }
@@ -264,12 +263,24 @@ void setPieceValue(Square *board)
 {
     switch (board->piece)
     {
-    case 'P': board->value = PAWN; break;
-        case 'A': board->value = BISHOP; break;
-        case 'C': board->value = KNIGHT; break;
-        case 'T': board->value = TOWER; break;
-        case 'Q': board->value = QUEEN; break;
-        case 'K': board->value = KING; break;
+    case 'P':
+        board->value = PAWN;
+        break;
+    case 'A':
+        board->value = BISHOP;
+        break;
+    case 'C':
+        board->value = KNIGHT;
+        break;
+    case 'T':
+        board->value = TOWER;
+        break;
+    case 'Q':
+        board->value = QUEEN;
+        break;
+    case 'K':
+        board->value = KING;
+        break;
     }
 }
 
@@ -334,8 +345,8 @@ void printList(Move *head)
     {
         printColorList(tmp);
         if (tmp->next == NULL)
-            printf(RESET"\n");
-        printf("%s", tmp->next!=NULL ? ", " : "\n");
+            printf(RESET "\n");
+        printf("%s", tmp->next != NULL ? ", " : "\n");
         tmp = tmp->next;
     }
 }
@@ -343,44 +354,57 @@ void printList(Move *head)
 void printColorList(Move *move)
 {
     char *color;
-    switch (move->moveColor) {
-        case M_GREEN:  color = GREEN;  break;
-        case M_RED:    color = RED;    break;
-        case M_BLUE:   color = BLUE;   break;
-        case M_YELLOW: color = YELLOW; break;
-        default:          color = RESET;
+    switch (move->moveColor)
+    {
+    case M_GREEN:
+        color = GREEN;
+        break;
+    case M_RED:
+        color = RED;
+        break;
+    case M_BLUE:
+        color = BLUE;
+        break;
+    case M_YELLOW:
+        color = YELLOW;
+        break;
+    default:
+        color = RESET;
     }
     printf("%s%s-%d", color, move->move, move->value);
 }
 
-void traverseAndAddMoves(Square *start, Move *head, Square* (*nextSquare)(Square *), int moveColor) 
+void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor)
 {
     Square *current = start;
 
-    while (current != NULL) {
+    while (current != NULL)
+    {
         Move *newMove = createMove(current->coordinates, current->value, moveColor);
         addMove(head, newMove);
 
-        if (current->piece != '.') {
+        if (current->piece != '.')
+        {
             break;
         }
         current = nextSquare(current);
     }
 }
 
-Stack * initStack(){
-    Stack *s = (Stack*)malloc(sizeof(Stack));
-   if(!s)
-   {
-    printf("\nMemory allocation failed\n");
-    return NULL;
-   }
-   s->top = NULL;
-   s->prev = NULL;
-   return s;
+Stack *initStack()
+{
+    Stack *s = (Stack *)malloc(sizeof(Stack));
+    if (!s)
+    {
+        printf("\nMemory allocation failed\n");
+        return NULL;
+    }
+    s->top = NULL;
+    s->prev = NULL;
+    return s;
 }
 
- void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
+void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
 {
     // from the list of moves, find the top 5 moves
     // iterate through the list of moves ignoring moves with value 0
@@ -388,106 +412,129 @@ Stack * initStack(){
     // if you found a move smaller than the top of the stack, pop the top from the stack and push it into the aux stack
     // push the new move into the stack and then push the top move from the aux stack back into the stack
 
-    //Top stack aux---------------------------
+    // Top stack aux---------------------------
 
     Move *m_ptr = head;
-    // chek of head and memory of the stacks 
+    // chek of head and memory of the stacks
     printf("%p\n", m_ptr);
     printf("%p\n", topMoves);
     printf("%p\n", auxStack);
 
-    while(m_ptr != NULL){
+    while (m_ptr != NULL)
+    {
 
-        if( m_ptr->value>0){  //before (while) -- after (if): avoid repeating verifications
-            if((*topMoves)->top == NULL ){  
-            push(topMoves,m_ptr);
-            printf("First push topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
-            } 
-            else {
-         
-                while((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value){
-            
-                    Move * tmp = pop(topMoves);
+        if (m_ptr->value > 0)
+        { // before (while) -- after (if): avoid repeating verifications
+            if ((*topMoves)->top == NULL)
+            {
+                push(topMoves, m_ptr);
+                printf("First push topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
+            }
+            else
+            {
+
+                while ((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value)
+                {
+
+                    Move *tmp = pop(topMoves);
                     printf("Popped from TopMoves: %s-%d\n", tmp->move, tmp->value);
                     push(auxStack, tmp);
                     printf("Pushed to aux: %s-%d\n", (*auxStack)->top->move, (*auxStack)->top->value);
-
                 }
-         
-                push (topMoves, m_ptr);
+
+                push(topMoves, m_ptr);
                 printf("Pushed topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
 
-                while((*auxStack)->top!= NULL){// Instead of (*auxStack) != NULL, use this so they cant have underflow.
-                
-                    Move * tmp = pop(auxStack);
+                while ((*auxStack)->top != NULL)
+                { // Instead of (*auxStack) != NULL, use this so they cant have underflow.
+
+                    Move *tmp = pop(auxStack);
                     printf("Popped from aux: %s-%d\n", tmp->move, tmp->value);
                     push(topMoves, tmp);
                     printf("Pushed to topMoves: %s-%d\n", (*topMoves)->top->move, (*topMoves)->top->value);
-
                 }
-         
-
             }
-     
-         }
-    m_ptr = m_ptr->next;
-
+        }
+        m_ptr = m_ptr->next;
     }
 }
 
-void push(Stack **s, Move *m){
+void push(Stack **s, Move *m)
+{
 
-    Stack *newTop = (Stack*)malloc(sizeof(Stack));
-    if(!newTop)
+    Stack *newTop = (Stack *)malloc(sizeof(Stack));
+    if (!newTop)
     {
         printf("\nMemory allocation failed\n");
         return;
     }
 
-    //EXPLANATION: the last push to topMoves was not done because of this if
-    //if ((*s)->top==NULL)
+    // EXPLANATION: the last push to topMoves was not done because of this if
+    // if ((*s)->top==NULL)
     //{
-    //    (*s)->top = m;
-    //    (*s)->prev = NULL;
-   // }
-   // else
+    //     (*s)->top = m;
+    //     (*s)->prev = NULL;
+    // }
+    // else
     //{
-        newTop->top = m;
-        newTop->prev = *s;
-        *s = newTop;
+    newTop->top = m;
+    newTop->prev = *s;
+    *s = newTop;
     //}
 }
 
 Move *pop(Stack **s)
 {
 
-if ((*s)->top ==NULL){
-    printf("\n Stack Underflow\n");
-    printf("%p", s );
-    return 0;
-}
-
-Stack *temp = *s;
-*s = (*s)->prev;
-Move *val = temp->top;
-free(temp);
-
-
-return val;
-} 
-
-//TODO: Correct printStack
-void printStack(Stack *s)
-{
-    Stack *tmp = s;
-    printf("Top Moves:\n");
-    int count = 1;
-    while (tmp != NULL)
+    if ((*s)->top == NULL)
     {
-        printColorList(tmp->top);
-        printf("%d.-\t%s",count ,tmp->prev!=NULL ? ", " : "\n");
-        count++;
-        tmp = tmp->prev;
+        printf("\n Stack Underflow\n");
+        printf("%p", s);
+        return 0;
     }
 
+    Stack *temp = *s;
+    *s = (*s)->prev;
+    Move *val = temp->top;
+    free(temp);
+
+    return val;
+}
+
+// TODO: Correct printStack
+void printStack(Stack *s)
+{
+    if (s == NULL)
+    {
+        printf("Stack is empty\n");
+        return;
+    }
+    else
+    {
+        printf("\n-------------------------------\n");
+        printf("TOP MOVES: \n");
+        while (s != NULL && s->top != NULL)
+        {
+            char *color;
+            switch (s->top->moveColor)
+            {
+            case M_GREEN:
+                color = GREEN;
+                break;
+            case M_RED:
+                color = RED;
+                break;
+            case M_BLUE:
+                color = BLUE;
+                break;
+            case M_YELLOW:
+                color = YELLOW;
+                break;
+            default:
+                color = RESET;
+            }
+            printf("%s%s-%d\n",color, s->top->move, s->top->value);
+            s = s->prev;
+        }
+    }
 }
