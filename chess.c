@@ -71,24 +71,30 @@ Move *head = NULL;
 Square *createBoard();
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
+
 // Board Navigation
 Square *moveWest(Square *s) { return s->west; }
 Square *moveEast(Square *s) { return s->east; }
 Square *moveNorth(Square *s) { return s->north; }
 Square *moveSouth(Square *s) { return s->south; }
+
 // File Management
 void readBoardFromFile(Square *board, const char *filename);
+
 // Move Management
 void findMoves(Square *target, Move *head);
 Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
 void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor);
+void freeMoves(Move * head);
+
 // Stack Management
 void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack);
 void push(Stack **s, Move *m);
 Move *pop(Stack **s);
 Stack *initStack();
 void printStack(Stack *s);
+void freeStack(Stack *s);
 
 // Display Functions
 void printBoard(Square *board);
@@ -115,6 +121,9 @@ int main()
     printStack(topMoves);
     free(head);
     // Free memory
+    freeMoves(head);
+    freeStack(topMoves);
+    freeStack(auxStack);
     free(board);
     return 0;
 }
@@ -419,10 +428,7 @@ void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
     // Top stack aux---------------------------
 
     Move *m_ptr = head;
-    // chek of head and memory of the stacks
-    printf("%p\n", m_ptr);
-    printf("%p\n", topMoves);
-    printf("%p\n", auxStack);
+
 
     while (m_ptr != NULL)
     {
@@ -464,18 +470,10 @@ void push(Stack **s, Move *m)
         return;
     }
 
-    // EXPLANATION: the last push to topMoves was not done because of this if
-    // if ((*s)->top==NULL)
-    //{
-    //     (*s)->top = m;
-    //     (*s)->prev = NULL;
-    // }
-    // else
-    //{
     newTop->top = m;
     newTop->prev = *s;
     *s = newTop;
-    //}
+    
 }
 
 Move *pop(Stack **s)
@@ -496,7 +494,6 @@ Move *pop(Stack **s)
     return val;
 }
 
-// TODO: Correct printStack
 void printStack(Stack *s)
 {
     if (s == NULL)
@@ -514,4 +511,22 @@ void printStack(Stack *s)
             s = s->prev;
         }
     }
+}
+
+void freeMoves(Move * head){
+ Move *current = head;
+ while(current != NULL){
+    Move *temp = current;
+    current = current->next;
+    free(temp);
+ }
+ 
+}
+
+void freeStack(Stack *s){
+   while (s != NULL){
+     Stack *temp = s;
+     s = s->prev;
+     free(temp);
+   }
 }
