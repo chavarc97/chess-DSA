@@ -44,6 +44,12 @@ typedef struct Square
     struct Square *south;
     struct Square *east;
     struct Square *west;
+    // add diagonal pointers
+    // Add diagonal pointers
+    struct Square *northEast;
+    struct Square *northWest;
+    struct Square *southEast;
+    struct Square *southWest;
 } Square;
 
 typedef struct Move
@@ -77,6 +83,10 @@ Square *moveWest(Square *s) { return s->west; }
 Square *moveEast(Square *s) { return s->east; }
 Square *moveNorth(Square *s) { return s->north; }
 Square *moveSouth(Square *s) { return s->south; }
+Square *moveNorthEast(Square *s) { return s->northEast; }
+Square *moveNorthWest(Square *s) { return s->northWest; }
+Square *moveSouthEast(Square *s) { return s->southEast; }
+Square *moveSouthWest(Square *s) { return s->southWest; }
 
 // File Management
 void readBoardFromFile(Square *board, const char *filename);
@@ -86,7 +96,7 @@ void findMoves(Square *target, Move *head);
 Move *createMove(char *coord, int value, MoveColor moveColor);
 void addMove(Move *h, Move *m);
 void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor);
-void freeMoves(Move * head);
+void freeMoves(Move *head);
 
 // Stack Management
 void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack);
@@ -106,7 +116,7 @@ int main()
 {
     Square *board = createBoard();
     // Example usage
-    readBoardFromFile(board, "T3.txt");
+    readBoardFromFile(board, "A1.txt");
     printBoard(board);
     Square *target = findSquare(board);
     printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
@@ -119,12 +129,12 @@ int main()
     Stack *auxStack = initStack();
     findTopMoves(head, &topMoves, &auxStack);
     printStack(topMoves);
-    free(head);
+
+
     // Free memory
     freeMoves(head);
     freeStack(topMoves);
     freeStack(auxStack);
-    free(board);
     return 0;
 }
 
@@ -155,16 +165,23 @@ Square *createBoard()
              * For example, if row = 0 and col = 0, the coordinates of the square will be "A1" or if seen as a 1D array, it will be board[0].
              * Then by incrementing the row and col, we are able to set the coordinates of the rest of the squares on the board.
              */
-            board[row * 8 + col].coordinates[0] = 'A' + col;
-            board[row * 8 + col].coordinates[1] = '8' - row;
-            board[row * 8 + col].coordinates[2] = '\0';
-            board[row * 8 + col].piece = '.';
-            board[row * 8 + col].value = 0;
-            board[row * 8 + col].isTarget = 0;
-            board[row * 8 + col].north = (row > 0) ? &board[(row - 1) * 8 + col] : NULL; // if row > 0, set north to the square above
-            board[row * 8 + col].south = (row < 7) ? &board[(row + 1) * 8 + col] : NULL; // if row < 7, set south to the square below
-            board[row * 8 + col].east = (col < 7) ? &board[row * 8 + col + 1] : NULL;    // if col < 7, set east to the square to the right
-            board[row * 8 + col].west = (col > 0) ? &board[row * 8 + col - 1] : NULL;    // if col > 0, set west to the square to the left
+            int index = row * 8 + col;
+            board[index].coordinates[0] = 'A' + col;
+            board[index].coordinates[1] = '8' - row;
+            board[index].coordinates[2] = '\0';
+            board[index].piece = '.';
+            board[index].value = 0;
+            board[index].isTarget = 0;
+            board[index].north = (row > 0) ? &board[(row - 1) * 8 + col] : NULL; // if row > 0, set north to the square above
+            board[index].south = (row < 7) ? &board[(row + 1) * 8 + col] : NULL; // if row < 7, set south to the square below
+            board[index].east = (col < 7) ? &board[row * 8 + col + 1] : NULL;    // if col < 7, set east to the square to the right
+            board[index].west = (col > 0) ? &board[row * 8 + col - 1] : NULL;    // if col > 0, set west to the square to the left
+            // Add diagonal pointers
+            // Diagonal connections
+            board[index].northEast = (row > 0 && col < 7) ? &board[(row - 1) * 8 + col + 1] : NULL;
+            board[index].northWest = (row > 0 && col > 0) ? &board[(row - 1) * 8 + col - 1] : NULL;
+            board[index].southEast = (row < 7 && col < 7) ? &board[(row + 1) * 8 + col + 1] : NULL;
+            board[index].southWest = (row < 7 && col > 0) ? &board[(row + 1) * 8 + col - 1] : NULL;
         }
     }
 
@@ -312,10 +329,21 @@ void findMoves(Square *target, Move *head)
 
     printf("Target square: %s\n", t_ptr->coordinates);
     // based on the target location traverse the board orthogonally (Tower movements)
-    traverseAndAddMoves(target->west, head, moveWest, M_RED);
-    traverseAndAddMoves(target->east, head, moveEast, M_BLUE);
-    traverseAndAddMoves(target->north, head, moveNorth, M_GREEN);
-    traverseAndAddMoves(target->south, head, moveSouth, M_YELLOW);
+    if (t_ptr->piece == 'T')
+    {
+        traverseAndAddMoves(target->west, head, moveWest, M_RED);
+        traverseAndAddMoves(target->east, head, moveEast, M_BLUE);
+        traverseAndAddMoves(target->north, head, moveNorth, M_GREEN);
+        traverseAndAddMoves(target->south, head, moveSouth, M_YELLOW);
+    }
+
+    if (t_ptr->piece == 'A')
+    {
+        traverseAndAddMoves(target->northEast, head, moveNorthEast, M_GREEN);
+        traverseAndAddMoves(target->northWest, head, moveNorthWest, M_RED);
+        traverseAndAddMoves(target->southEast, head, moveSouthEast, M_BLUE);
+        traverseAndAddMoves(target->southWest, head, moveSouthWest, M_YELLOW);
+    }
 }
 
 Move *createMove(char *coord, int value, MoveColor moveColor)
@@ -349,6 +377,11 @@ void addMove(Move *h, Move *m)
 void printList(Move *head)
 {
     Move *tmp = head;
+    if(tmp == NULL)
+    {
+        printf("List: empty\n");
+        return;
+    }
     printf("List of moves: ");
     while (tmp != NULL)
     {
@@ -429,7 +462,6 @@ void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
 
     Move *m_ptr = head;
 
-
     while (m_ptr != NULL)
     {
 
@@ -473,7 +505,6 @@ void push(Stack **s, Move *m)
     newTop->top = m;
     newTop->prev = *s;
     *s = newTop;
-    
 }
 
 Move *pop(Stack **s)
@@ -498,35 +529,52 @@ void printStack(Stack *s)
 {
     if (s == NULL)
     {
-        printf("Stack is empty\n");
+        printf("Stack is empty: no moves to display :(\n");
         return;
     }
-    else
+    else if (s->top == NULL)
+    {
+        printf("TOP MOVES:\nStack is empty: no moves to display :(\n");
+        return;
+    }
     {
         printf("\n-------------------------------\n");
         printf("TOP MOVES: \n");
+        // check how many moves are in the stack
+        int m_count = 0;
+        Stack *tmp = s;
+        while (tmp != NULL && tmp->top != NULL)
+        {
+            m_count++;
+            tmp = tmp->prev;
+        }
         while (s != NULL && s->top != NULL)
         {
+            printf("%d: ", m_count);
             printColorList(s->top, 1);
             s = s->prev;
         }
     }
 }
 
-void freeMoves(Move * head){
- Move *current = head;
- while(current != NULL){
-    Move *temp = current;
-    current = current->next;
-    free(temp);
- }
- 
+void freeMoves(Move *head)
+{
+    Move *current = head;
+    while (current != NULL)
+    {
+        Move *temp = current;
+        current = current->next;
+        free(temp);
+    }
 }
 
-void freeStack(Stack *s){
-   while (s != NULL){
-     Stack *temp = s;
-     s = s->prev;
-     free(temp);
-   }
+void freeStack(Stack *s)
+{
+    while (s != NULL)
+    {
+        Stack *temp = s;
+        s = s->prev;
+        free(temp);
+    }
 }
+
