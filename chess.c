@@ -119,9 +119,13 @@ void freeBoard(Square **board);
 int main()
 {
     Square *board = createBoard();
-
+    int ret;
+    // file name input
+    char filename[100];
+    printf("Enter the file name (A1.txt): ");
+    ret = scanf("%s", filename);
     // Example usage
-    readBoardFromFile(board, "A1.txt");
+    readBoardFromFile(board, filename);
     printBoard(board);
     Square *target = findSquare(board);
     printf("\ntarget address: %p\nCoordinates: %s\nValue: %d \n", target, target->coordinates, target->value);
@@ -285,7 +289,7 @@ void readBoardFromFile(Square *board, const char *filename)
         /* The lines `int targetRow = targetCoord[1] - '1';` and `int targetCol = targetCoord[0] -
         'A';` are converting the target coordinate from a character representation to a 0-based
         index for row and column respectively. */
-        int targetRow = targetCoord[1] - '1';
+        int targetRow = 8 - (targetCoord[1] - '0');
         int targetCol = targetCoord[0] - 'A';
 
         // Mark the target square
@@ -454,7 +458,7 @@ void printColorList(Move *move, int moveOrStack)
         printf("%s%s-%d", color, move->move, move->value);
     else
         // Prints with line break
-        printf("%s%s-%d\n", color, move->move, move->value);
+        printf("%s%s-%d\n"RESET, color, move->move, move->value);
 }
 
 // Fuction to add traverse moves.
@@ -601,19 +605,15 @@ void printStack(Stack *s)
         printf("\n-------------------------------\n");
         printf("TOP MOVES: \n");
         // check how many moves are in the stack
-        int m_count = 0;
+        int m_count = 1;
         Stack *tmp = s;
-        while (tmp != NULL && tmp->top != NULL)
-        {
-            m_count++;
-            tmp = tmp->prev; // Move to prev node.
-        }
         // Step through the stack and show each move
         while (s != NULL && s->top != NULL)
         {
             printf("%d: ", m_count);   // Print number of moves
             printColorList(s->top, 1); // Print it with color.
             s = s->prev;               // Move to prev node
+            m_count++;                 // Increment the move count
         }
     }
 }
