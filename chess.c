@@ -45,14 +45,13 @@ typedef struct Square
     struct Square *south;
     struct Square *east;
     struct Square *west;
-    
+
     // Add diagonal pointers
     struct Square *northEast;
     struct Square *northWest;
     struct Square *southEast;
     struct Square *southWest;
 } Square;
-
 
 typedef struct Move
 {
@@ -79,6 +78,7 @@ Move *head = NULL;
 Square *createBoard();
 void setPieceValue(Square *board);
 Square *findSquare(Square *board);
+int isBoardValid(Square *board);
 
 // Board Navigation
 Square *moveWest(Square *s) { return s->west; }
@@ -112,6 +112,8 @@ void freeStack(Stack *s);
 void printBoard(Square *board);
 void printList(Move *head);
 void printColorList(Move *move, int flag);
+
+void freeBoard(Square **board);
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 int main()
@@ -129,22 +131,20 @@ int main()
     // Step 3 create a stack with the 5 top moves
     // char tm[10] = {"topMoves"};
 
-    
     Stack *topMoves = initStack();
     Stack *auxStack = initStack();
     findTopMoves(head, &topMoves, &auxStack);
     printStack(topMoves);
 
-
     // Free memory
     freeMoves(head);
     freeStack(topMoves);
     freeStack(auxStack);
-    free(board);
+    freeBoard(&board);
     return 0;
 }
 
-//Fuctions
+// Fuctions
 Square *createBoard()
 {
     // Allocate memory for the board
@@ -190,13 +190,22 @@ Square *createBoard()
             board[index].southWest = (row < 7 && col > 0) ? &board[(row + 1) * 8 + col - 1] : NULL;
         }
     }
-    //Return the board
+    // Return the board
     return board;
 }
 
+int isBoardValid(Square *board)
+{
+    return board != NULL;
+}
 // Print the board with connections
 void printBoard(Square *board)
 {
+    if (!isBoardValid(board))
+    {
+        printf("Error: Cannot print board - board has been freed or is invalid\n");
+        return;
+    }
     printf("\nChess Board Configuration:\n\n");
     printf("    A   B   C   D   E   F   G   H\n"); // Added column labels at top
     printf("   --------------------------------\n");
@@ -228,11 +237,11 @@ void printBoard(Square *board)
 void readBoardFromFile(Square *board, const char *filename)
 {
     // Open File
-    char route[100] = "./data/"; 
+    char route[100] = "./data/";
     char fileRoute[100];
-    strcpy(fileRoute, route);    // copy of route in fileRoute
-    strcat(fileRoute, filename); // concatenate (./data/filename.txt)
-    file = fopen(fileRoute, "r"); //Open file to read it
+    strcpy(fileRoute, route);     // copy of route in fileRoute
+    strcat(fileRoute, filename);  // concatenate (./data/filename.txt)
+    file = fopen(fileRoute, "r"); // Open file to read it
 
     // Check if file exists
     if (file == NULL)
@@ -291,7 +300,7 @@ void readBoardFromFile(Square *board, const char *filename)
     fclose(file);
 }
 
-//This fuction set the value of each peace depending on the letters.
+// This fuction set the value of each peace depending on the letters.
 void setPieceValue(Square *board)
 {
     switch (board->piece)
@@ -317,7 +326,7 @@ void setPieceValue(Square *board)
     }
 }
 
-//Fuction to find the target square.
+// Fuction to find the target square.
 Square *findSquare(Square *board)
 {
     for (int i = 0; i < 64; i++)
@@ -327,7 +336,7 @@ Square *findSquare(Square *board)
             return &board[i];
         }
     }
-    //At the end of the for return Null if theres no target. 
+    // At the end of the for return Null if theres no target.
     return NULL;
 }
 
@@ -345,7 +354,7 @@ void findMoves(Square *target, Move *head)
         traverseAndAddMoves(target->north, head, moveNorth, M_GREEN);
         traverseAndAddMoves(target->south, head, moveSouth, M_YELLOW);
     }
- // Based on the target location traverse the board diagonally (Bishop movements (A))
+    // Based on the target location traverse the board diagonally (Bishop movements (A))
     if (t_ptr->piece == 'A')
     {
         traverseAndAddMoves(target->northEast, head, moveNorthEast, M_GREEN);
@@ -355,9 +364,9 @@ void findMoves(Square *target, Move *head)
     }
 }
 
-//Fuction that creates and return a new node "Move".
+// Fuction that creates and return a new node "Move".
 Move *createMove(char *coord, int value, MoveColor moveColor)
-{   //Allocate memory for the move
+{ // Allocate memory for the move
     Move *newMove = (Move *)malloc(sizeof(Move));
     // if memory allocation fails
     if (newMove == NULL)
@@ -366,60 +375,60 @@ Move *createMove(char *coord, int value, MoveColor moveColor)
         free(newMove);
         exit(1);
     }
-    //Copy coordinates in the new node move
+    // Copy coordinates in the new node move
     strcpy(newMove->move, coord);
-    //Set value
+    // Set value
     newMove->value = value;
-    //Next null so is not connected to the list yet.
+    // Next null so is not connected to the list yet.
     newMove->next = NULL;
-    //Set move color
+    // Set move color
     newMove->moveColor = moveColor;
     return newMove;
 }
 
-//Fuction to add a move
+// Fuction to add a move
 void addMove(Move *h, Move *m)
-{   //temporary is equal to head.
+{ // temporary is equal to head.
     Move *tmp = head;
-    //If head is empty, the new node is the first on the list.
+    // If head is empty, the new node is the first on the list.
     if (!tmp)
         head = m;
     else
-    {   //Find the last node in the list.
+    { // Find the last node in the list.
         while (tmp->next != NULL)
             tmp = tmp->next;
-        //Assign the new node to the next node of head.
+        // Assign the new node to the next node of head.
         tmp->next = m;
     }
 }
 
 void printList(Move *head)
 {
-    //Assign tmp to head
+    // Assign tmp to head
     Move *tmp = head;
-    //If head doesnt exist is empty
-    if(tmp == NULL)
+    // If head doesnt exist is empty
+    if (tmp == NULL)
     {
         printf("List: empty\n");
         return;
     }
     printf("List of moves: ");
-    //Until tmp isnt empty or without a node.
-    while (tmp != NULL) 
+    // Until tmp isnt empty or without a node.
+    while (tmp != NULL)
     {
-        //print node with color
+        // print node with color
         printColorList(tmp, 0);
-        //If the node is the last one.
+        // If the node is the last one.
         if (tmp->next == NULL)
             printf(RESET "\n");
-        printf("%s", tmp->next != NULL ? ", " : "\n"); //print a coma if its not the last one.
-        tmp = tmp->next; //Go to the next node to continue the cicle.
+        printf("%s", tmp->next != NULL ? ", " : "\n"); // print a coma if its not the last one.
+        tmp = tmp->next;                               // Go to the next node to continue the cicle.
     }
 }
 
 void printColorList(Move *move, int moveOrStack)
 {
-    //Format
+    // Format
     int flag = moveOrStack;
     char *color;
     // Color assignment
@@ -440,48 +449,48 @@ void printColorList(Move *move, int moveOrStack)
     default:
         color = RESET;
     }
-   
+
     if (flag == 0)
         printf("%s%s-%d", color, move->move, move->value);
     else
-      //Prints with line break
+        // Prints with line break
         printf("%s%s-%d\n", color, move->move, move->value);
 }
 
-//Fuction to add traverse moves.
+// Fuction to add traverse moves.
 void traverseAndAddMoves(Square *start, Move *head, Square *(*nextSquare)(Square *), int moveColor)
-{   //Initialize in the first square.
+{ // Initialize in the first square.
     Square *current = start;
-   
-   //Until current is different to null
+
+    // Until current is different to null
     while (current != NULL)
     {
-        //Create a new move based in coordinates, value and color.
+        // Create a new move based in coordinates, value and color.
         Move *newMove = createMove(current->coordinates, current->value, moveColor);
-        //Adding the move.
+        // Adding the move.
         addMove(head, newMove);
-        //If the pice if different from . , then end the cicle.
+        // If the pice if different from . , then end the cicle.
         if (current->piece != '.')
         {
             break;
         }
-        //Go to the next square.
+        // Go to the next square.
         current = nextSquare(current);
     }
 }
 
-//Initialization of stack
+// Initialization of stack
 Stack *initStack()
 {
-    //Allocate memory for the stack
+    // Allocate memory for the stack
     Stack *s = (Stack *)malloc(sizeof(Stack));
-     // if memory allocation fails
+    // if memory allocation fails
     if (!s)
     {
         printf("\nMemory allocation failed\n");
         return NULL;
     }
-    //Initialize top and prev as nulls.
+    // Initialize top and prev as nulls.
     s->top = NULL;
     s->prev = NULL;
     return s;
@@ -497,93 +506,93 @@ void findTopMoves(Move *head, Stack **topMoves, Stack **auxStack)
 
     // Top stack aux---------------------------
 
-   //Pointer to the head of the Stack
+    // Pointer to the head of the Stack
     Move *m_ptr = head;
 
-    //Until it isnt null
+    // Until it isnt null
     while (m_ptr != NULL)
     {
-        //If the value is greater than cero.
+        // If the value is greater than cero.
         if (m_ptr->value > 0)
         { // before (while) -- after (if): avoid repeating verifications
-            //If its empty it push the first move
+            // If its empty it push the first move
             if ((*topMoves)->top == NULL)
             {
                 push(topMoves, m_ptr);
             }
             else
             {
-                //Until the pointer is less than the move in the stack.
+                // Until the pointer is less than the move in the stack.
                 while ((*topMoves)->top != NULL && m_ptr->value < (*topMoves)->top->value)
                 {
-                    //Pop the moves at the principal stack and push them into the auxiliar stack.
+                    // Pop the moves at the principal stack and push them into the auxiliar stack.
                     Move *tmp = pop(topMoves);
                     push(auxStack, tmp);
                 }
-                //Pushthe move into the principal stack
+                // Pushthe move into the principal stack
                 push(topMoves, m_ptr);
                 while ((*auxStack)->top != NULL)
                 { // Instead of (*auxStack) != NULL, use this so they cant have underflow.
-                    
-                    //Now pop from the aux and push into the principal stack until aux is empty.
+
+                    // Now pop from the aux and push into the principal stack until aux is empty.
                     Move *tmp = pop(auxStack);
                     push(topMoves, tmp);
                 }
             }
         }
-        //Go to the next move
+        // Go to the next move
         m_ptr = m_ptr->next;
     }
 }
 
 void push(Stack **s, Move *m)
 {
-    //Allocate memory for the new node of stack
+    // Allocate memory for the new node of stack
     Stack *newTop = (Stack *)malloc(sizeof(Stack));
-      // if memory allocation fails
+    // if memory allocation fails
     if (!newTop)
     {
         printf("\nMemory allocation failed\n");
         return;
     }
-    //Assign the movement to the top node
+    // Assign the movement to the top node
     newTop->top = m;
-    //The prev node of the new node point to the stack.
+    // The prev node of the new node point to the stack.
     newTop->prev = *s;
-    //Update the stack so that the new node is the new top.
+    // Update the stack so that the new node is the new top.
     *s = newTop;
 }
 
 Move *pop(Stack **s)
 {
-    //If the stack is empty
+    // If the stack is empty
     if ((*s)->top == NULL)
     {
         printf("\n Stack Underflow\n");
         printf("%p", s);
         return 0;
     }
-   //Point to the node thats going to be erased
+    // Point to the node thats going to be erased
     Stack *temp = *s;
-   //Make that the node point to the prev node.
+    // Make that the node point to the prev node.
     *s = (*s)->prev;
-    //Save the movement at the top to return it.
+    // Save the movement at the top to return it.
     Move *val = temp->top;
-    //Free memory
+    // Free memory
     free(temp);
-    //Return erased move.
+    // Return erased move.
     return val;
 }
 
 void printStack(Stack *s)
 {
-    //If the stack is empty
+    // If the stack is empty
     if (s == NULL)
     {
         printf("Stack is empty: no moves to display :(\n");
         return;
     }
-    else if (s->top == NULL) //If the top is empty
+    else if (s->top == NULL) // If the top is empty
     {
         printf("TOP MOVES:\nStack is empty: no moves to display :(\n");
         return;
@@ -597,38 +606,50 @@ void printStack(Stack *s)
         while (tmp != NULL && tmp->top != NULL)
         {
             m_count++;
-            tmp = tmp->prev; //Move to prev node.
+            tmp = tmp->prev; // Move to prev node.
         }
-        //Step through the stack and show each move
+        // Step through the stack and show each move
         while (s != NULL && s->top != NULL)
         {
-            printf("%d: ", m_count); //Print number of moves
-            printColorList(s->top, 1);//Print it with color.
-            s = s->prev;//Move to prev node
+            printf("%d: ", m_count);   // Print number of moves
+            printColorList(s->top, 1); // Print it with color.
+            s = s->prev;               // Move to prev node
         }
     }
 }
 
 void freeMoves(Move *head)
 {
-    //Free memory of all the nodes in the list.
+    // Free memory of all the nodes in the list.
     Move *current = head;
     while (current != NULL)
     {
         Move *temp = current;
-        current = current->next; //Go to next node
-        free(temp);//Free node
+        current = current->next; // Go to next node
+        free(temp);              // Free node
     }
 }
 
 void freeStack(Stack *s)
 {
-    //Free memory of all the nodes at the stack
+    // Free memory of all the nodes at the stack
     while (s != NULL)
     {
         Stack *temp = s;
-        s = s->prev; //Go to prev
-        free(temp);//Free actual node.
+        s = s->prev; // Go to prev
+        free(temp);  // Free actual node.
     }
 }
 
+void freeBoard(Square **board)
+{
+    if (board == NULL || *board == NULL)
+    {
+        return;
+    }
+
+    // Free the board
+    free(*board);
+    // Set the pointer to NULL to prevent use after free
+    *board = NULL;
+}
